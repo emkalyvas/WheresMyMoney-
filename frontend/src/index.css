@@ -1,0 +1,726 @@
+/* =============================================================================
+   WheresMyMoney! — Design System
+   Dark-mode first, glassmorphism, smooth micro-animations
+   ============================================================================= */
+
+/* --- Google Fonts are loaded via index.html --- */
+
+/* ── 1. CSS Custom Properties (Design Tokens) ─────────────────────────────── */
+:root {
+  /* Colours */
+  --clr-bg-base: #070c1a;
+  --clr-bg-surface: #0d1629;
+  --clr-bg-elevated: #111d35;
+
+  --clr-glass-bg: rgba(255, 255, 255, 0.04);
+  --clr-glass-border: rgba(255, 255, 255, 0.09);
+  --clr-glass-hover: rgba(255, 255, 255, 0.07);
+
+  --clr-accent-blue: #3b82f6;
+  --clr-accent-purple: #8b5cf6;
+  --clr-accent-cyan: #06b6d4;
+  --clr-accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  --clr-accent-gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
+
+  --clr-positive: #10b981;
+  --clr-positive-dim: rgba(16, 185, 129, 0.15);
+  --clr-negative: #ef4444;
+  --clr-negative-dim: rgba(239, 68, 68, 0.15);
+  --clr-warning: #f59e0b;
+  --clr-warning-dim: rgba(245, 158, 11, 0.15);
+
+  --clr-text-primary: #f0f4ff;
+  --clr-text-secondary: #8b9dc3;
+  --clr-text-muted: #4a5a7a;
+  --clr-text-accent: #93c5fd;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Typography */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+
+  /* Borders & Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+
+  /* Shadows */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  --shadow-glow-blue: 0 0 32px rgba(59, 130, 246, 0.18);
+  --shadow-glow-purple: 0 0 32px rgba(139, 92, 246, 0.18);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+/* ── 2. Reset & Base ──────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--clr-text-primary);
+  background: var(--clr-bg-base);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+
+  /* Subtle animated mesh background */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(59, 130, 246, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(139, 92, 246, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 50% 100%, rgba(6, 182, 212, 0.04) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ── 3. Layout ────────────────────────────────────────────────────────────── */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: var(--space-8) var(--space-8) var(--space-12);
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── 4. Header ────────────────────────────────────────────────────────────── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(7, 12, 26, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--clr-glass-border);
+  padding: var(--space-4) var(--space-8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.header-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--clr-accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  box-shadow: var(--shadow-glow-blue);
+  flex-shrink: 0;
+}
+
+.header-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  background: var(--clr-accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--clr-text-secondary);
+}
+
+.header-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--clr-glass-bg);
+  border: 1px solid var(--clr-glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--clr-text-primary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.header-refresh-btn:hover {
+  background: var(--clr-glass-hover);
+  border-color: var(--clr-accent-blue);
+}
+
+/* ── 5. Glass Card ────────────────────────────────────────────────────────── */
+.card {
+  background: var(--clr-glass-bg);
+  border: 1px solid var(--clr-glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: var(--shadow-card), 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
+.card-title {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--clr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ── 6. Stat Cards ────────────────────────────────────────────────────────── */
+.stat-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+}
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.stat-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-lg);
+}
+
+.stat-card-label {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--clr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-2);
+}
+
+.stat-card-value {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: var(--space-2);
+}
+
+.stat-card-sub {
+  font-size: var(--font-size-xs);
+  color: var(--clr-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.badge-positive { background: var(--clr-positive-dim); color: var(--clr-positive); }
+.badge-negative { background: var(--clr-negative-dim); color: var(--clr-negative); }
+.badge-warning  { background: var(--clr-warning-dim);  color: var(--clr-warning);  }
+
+/* ── 7. Section Layout ────────────────────────────────────────────────────── */
+.section {
+  margin-bottom: var(--space-8);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.section-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.section-title-accent {
+  width: 4px;
+  height: 20px;
+  border-radius: 2px;
+  background: var(--clr-accent-gradient);
+  flex-shrink: 0;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-6);
+}
+
+/* ── 8. Tax Breakdown ─────────────────────────────────────────────────────── */
+.tax-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: var(--font-size-sm);
+  gap: var(--space-4);
+}
+
+.tax-row:last-child { border-bottom: none; }
+
+.tax-row-label {
+  color: var(--clr-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.tax-row-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tax-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--clr-glass-border), transparent);
+  margin: var(--space-3) 0;
+}
+
+.tax-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-2);
+}
+
+.tax-total-row.warning {
+  background: var(--clr-warning-dim);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.tax-total-row.danger {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ── 9. Asset List ────────────────────────────────────────────────────────── */
+.asset-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.asset-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--clr-glass-border);
+}
+
+.asset-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.asset-item-name {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--clr-text-primary);
+}
+
+.asset-item-meta {
+  font-size: var(--font-size-xs);
+  color: var(--clr-text-muted);
+}
+
+.asset-item-balance {
+  text-align: right;
+}
+
+.asset-item-eur {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.asset-item-native {
+  font-size: var(--font-size-xs);
+  color: var(--clr-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 10. Category bars ────────────────────────────────────────────────────── */
+.category-item {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.category-item:last-child { border-bottom: none; }
+
+.category-name {
+  font-size: var(--font-size-sm);
+  color: var(--clr-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.category-bar-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.category-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-value {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 11. Charts ────────────────────────────────────────────────────────────── */
+.chart-wrapper {
+  width: 100%;
+  height: 280px;
+}
+
+/* ── 12. Loading & Error States ───────────────────────────────────────────── */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: var(--space-5);
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--clr-glass-border);
+  border-top-color: var(--clr-accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: var(--clr-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.error-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--clr-negative);
+}
+
+.error-message {
+  color: var(--clr-text-secondary);
+  max-width: 480px;
+  font-size: var(--font-size-sm);
+  line-height: 1.7;
+}
+
+.retry-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--clr-accent-gradient);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.retry-btn:active { transform: translateY(0); }
+
+/* ── 13. Net Worth Summary ────────────────────────────────────────────────── */
+.net-worth-display {
+  text-align: center;
+  padding: var(--space-6);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-5);
+}
+
+.net-worth-label {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--clr-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.net-worth-value {
+  font-size: var(--font-size-4xl);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  background: var(--clr-accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── 14. Tooltips (Recharts custom) ──────────────────────────────────────── */
+.chart-tooltip {
+  background: rgba(13, 22, 41, 0.95);
+  border: 1px solid var(--clr-glass-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+}
+
+.chart-tooltip-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--clr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-2);
+}
+
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 2px 0;
+}
+
+.chart-tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── 15. Utility ──────────────────────────────────────────────────────────── */
+.text-positive { color: var(--clr-positive); }
+.text-negative { color: var(--clr-negative); }
+.text-warning  { color: var(--clr-warning); }
+.text-accent   { color: var(--clr-accent-blue); }
+.text-muted    { color: var(--clr-text-secondary); }
+
+.font-mono { font-variant-numeric: tabular-nums; }
+
+/* ── 16. Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .three-col { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .main-content { padding: var(--space-4); }
+  .header { padding: var(--space-4); }
+  .two-col,
+  .three-col { grid-template-columns: 1fr; }
+  .stat-cards-grid { grid-template-columns: 1fr 1fr; }
+  .category-item { grid-template-columns: 120px 1fr auto; }
+  .header-title { font-size: var(--font-size-base); }
+}
+
+@media (max-width: 480px) {
+  .stat-cards-grid { grid-template-columns: 1fr; }
+}
+
+/* ── 17. Animations ───────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.4s ease both;
+}
+
+/* Stagger children */
+.fade-in-up:nth-child(1)  { animation-delay: 0ms; }
+.fade-in-up:nth-child(2)  { animation-delay: 60ms; }
+.fade-in-up:nth-child(3)  { animation-delay: 120ms; }
+.fade-in-up:nth-child(4)  { animation-delay: 180ms; }
+.fade-in-up:nth-child(5)  { animation-delay: 240ms; }
+.fade-in-up:nth-child(6)  { animation-delay: 300ms; }
+.fade-in-up:nth-child(7)  { animation-delay: 360ms; }
+.fade-in-up:nth-child(8)  { animation-delay: 420ms; }
+
+/* ── 18. Print / PDF styles ───────────────────────────────────────────────── */
+@media print {
+  /* Hide interactive shell elements */
+  .header,
+  #btn-refresh,
+  #btn-download,
+  .header-refresh-btn,
+  .retry-btn {
+    display: none !important;
+  }
+
+  /* Remove animated background — too heavy for PDF rendering */
+  body {
+    background-image: none;
+    background: #070c1a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html {
+    background: #070c1a;
+  }
+
+  /* Remove page margins from the browser chrome */
+  @page {
+    margin: 0;
+    background: #070c1a;
+  }
+
+  /* Ensure cards don't get clipped across page breaks */
+  .card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Prevent section headers breaking from their content */
+  .section-header {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Remove animations for print */
+  .fade-in-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Remove outer scrollbar */
+  html, body {
+    overflow: visible;
+  }
+}
