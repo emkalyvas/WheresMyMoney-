@@ -1,0 +1,43 @@
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      FIREFLY_API_URL: ${FIREFLY_API_URL}
+      FIREFLY_TOKEN: ${FIREFLY_TOKEN}
+      BACKEND_PORT: ${BACKEND_PORT:-3001}
+      COMPANY_TAG: ${COMPANY_TAG:-MnApps}
+      START_DATE: ${START_DATE:-2024-01-01}
+      INCOME_TAX_RATE: ${INCOME_TAX_RATE:-0.22}
+      BUSINESS_TAX: ${BUSINESS_TAX:-800}
+      ADVANCE_TAX_RATE: ${ADVANCE_TAX_RATE:-0.40}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      REPORT_EMAILS: ${REPORT_EMAILS}
+      REPORT_SCHEDULE_DAY: ${REPORT_SCHEDULE_DAY:-1}
+      REPORT_SCHEDULE_TIME: ${REPORT_SCHEDULE_TIME:-08:00}
+    ports:
+      - "${BACKEND_PORT:-3001}:${BACKEND_PORT:-3001}"
+    networks:
+      - wmm-network
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_BACKEND_PORT: ${BACKEND_PORT:-3001}
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+    networks:
+      - wmm-network
+
+networks:
+  wmm-network:
+    driver: bridge
