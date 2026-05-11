@@ -71,7 +71,7 @@ export default function GeneralOverviewCard({ data }) {
         <div style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, color: assets.netWorthEur >= 0 ? 'var(--clr-positive)' : 'var(--clr-negative)' }}>
           {eurFmt.format(assets.netWorthEur)}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-4)', marginTop: 'var(--space-3)', fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 'var(--space-4)', marginTop: 'var(--space-3)', fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <span style={{ fontWeight: 600 }}>₿ {assets.totalBtc.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</span>
             <span style={{ opacity: 0.7 }}>{eurFmt.format(assets.totalBtcEur)}</span>
@@ -80,6 +80,12 @@ export default function GeneralOverviewCard({ data }) {
             <span style={{ fontWeight: 600 }}>₳ {assets.totalAda.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
             <span style={{ opacity: 0.7 }}>{eurFmt.format(assets.totalAdaEur)}</span>
           </div>
+          {assets.investedStocks?.map(stock => (
+            <div key={stock.ticker} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600 }}>{stock.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {stock.ticker}</span>
+              <span style={{ opacity: 0.7 }}>{eurFmt.format(stock.balanceEur)}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -90,33 +96,37 @@ export default function GeneralOverviewCard({ data }) {
           <div className="tax-row-label">
             {r.label}
             {r.info && (
-               <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', marginLeft: '8px' }}>
-                 ({r.info})
-               </span>
+              <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', marginLeft: '8px' }}>
+                ({r.info})
+              </span>
             )}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span className={`tax-row-value ${r.valueClass ?? ''}`}>
-              {r.value}
-            </span>
-            {r.growth != null && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '12px' }}>
-                <span style={{ fontSize: '10px', color: 'var(--clr-text-muted)' }}>
-                  Prev: {eurFmt.format(r.previousValue)}
-                </span>
-                <span 
-                  className={`badge ${
-                    r.growth > 0 
-                      ? (r.invertGrowthColor ? 'badge-negative' : 'badge-positive') 
-                      : r.growth < 0
-                        ? (r.invertGrowthColor ? 'badge-positive' : 'badge-negative')
-                        : ''
-                  }`} 
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className={`tax-row-value ${r.valueClass ?? ''}`}>
+                {r.value}
+              </span>
+              {r.growth != null && (
+                <span
+                  className={`badge ${r.growth > 0
+                    ? (r.invertGrowthColor ? 'badge-negative' : 'badge-positive')
+                    : r.growth < 0
+                      ? (r.invertGrowthColor ? 'badge-positive' : 'badge-negative')
+                      : ''
+                    }`}
                 >
                   {r.growth > 0 ? '▲' : r.growth < 0 ? '▼' : '−'} {Math.abs(r.growth).toFixed(1)}%
                 </span>
+              )}
+            </div>
+            {r.growth != null && (
+              <div style={{ marginTop: '0' }} >
+                <span style={{ fontSize: '11px', color: 'var(--clr-text-muted)' }}>
+                  Prev: {eurFmt.format(r.previousValue)}
+                </span>
               </div>
             )}
+
           </div>
         </div>
       ))}

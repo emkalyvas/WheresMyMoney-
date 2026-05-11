@@ -1,8 +1,7 @@
 'use strict';
 
 const express = require('express');
-const firefly = require('../services/firefly');
-const { calculate } = require('../services/calculator');
+const { getStatistics } = require('../services/db');
 
 const router = express.Router();
 
@@ -17,43 +16,19 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
   try {
-    // Fetch all data sources in parallel to minimise latency
-    const [rawTransactions, assetAccounts, liabilityAccounts] = await Promise.all([
-      firefly.fetchTransactions(),
-      firefly.fetchAssetAccounts(),
-      firefly.fetchLiabilityAccounts(),
-    ]);
+    const statistics = await getStatistics();
 
-    // Collect unique non-EUR currencies across all accounts
-    const allAccounts = [...assetAccounts, ...liabilityAccounts];
-    const foreignCurrencies = [
-      ...new Set(
-        allAccounts
-          .map((a) => a.attributes?.currency_code)
-          .filter((c) => c && c.toUpperCase() !== 'EUR')
-      ),
-    ];
-
-    // Resolve exchange rates in parallel
-    const rateEntries = await Promise.all(
-      foreignCurrencies.map(async (currency) => [currency, await firefly.getEurRate(currency)])
-    );
-    const eurRates = new Map(rateEntries);
-
-    const statistics = calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, new Date());
+    if (!statistics) {
+      return res.status(503).json({
+        success: false,
+        error: 'Data is currently being calculated. Please try again in a few moments.',
+        retryAfter: 5
+      });
+    }
 
     res.json({ success: true, data: statistics });
   } catch (err) {
-    console.error('[statistics] Error computing statistics:', err.message);
-
-    // Distinguish Firefly III connectivity errors from internal errors
-    if (err.response) {
-      return res.status(502).json({
-        success: false,
-        error: 'Firefly III API error',
-        details: err.response.data,
-      });
-    }
+    console.error('[statistics] Error fetching cached statistics:', err.message);
 
     res.status(500).json({
       success: false,
