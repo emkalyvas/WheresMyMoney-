@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  backend:
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      # Tell Vite to use polling if standard file watching fails inside docker
+      - CHOKIDAR_USEPOLLING=true

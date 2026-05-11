@@ -59,10 +59,15 @@ app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 // ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
+const { startCacheWorker } = require('./services/cacheWorker');
+
 app.listen(config.port, () => {
   console.log(`WheresMyMoney! backend running on port ${config.port}`);
   console.log(`Firefly III: ${config.firefly.apiUrl}`);
   console.log(`Data from: ${config.calculations.startDate}`);
+
+  // Start the background data cache worker
+  startCacheWorker();
 
   // Start the monthly report scheduler
   startScheduler();

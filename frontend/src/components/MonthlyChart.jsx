@@ -90,16 +90,16 @@ export default function MonthlyChart({ monthlyData }) {
             <Legend
               wrapperStyle={{ fontSize: 12, color: 'var(--clr-text-secondary)', paddingTop: 8 }}
             />
-            <Bar dataKey="income"   name="Income"   fill="#10b981" radius={[3, 3, 0, 0]} maxBarSize={28} />
+            <Bar dataKey="income" name="Income" fill="#10b981" radius={[3, 3, 0, 0]} maxBarSize={28} />
             <Bar dataKey="expenses" name="Expenses" fill="#ef4444" radius={[3, 3, 0, 0]} maxBarSize={28} />
             <Line
               type="monotone"
               dataKey="surplus"
               name="Surplus"
-              stroke="#10b981"
+              stroke="rgba(2, 164, 227, 1)"
               strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, fill: '#10b981' }}
+              dot={true}
+              activeDot={{ r: 4, fill: 'rgba(2, 164, 227, 1)' }}
             />
           </ComposedChart>
         </ResponsiveContainer>

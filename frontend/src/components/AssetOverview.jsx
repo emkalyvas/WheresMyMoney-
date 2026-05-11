@@ -21,6 +21,7 @@ export default function AssetOverview({ assets }) {
         <div className="net-worth-value">{eurFmt.format(netWorthEur)}</div>
         <div style={{ marginTop: 'var(--space-3)', display: 'flex', justifyContent: 'center', gap: 'var(--space-6)', fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-secondary)' }}>
           <span>Assets: <strong style={{ color: 'var(--clr-positive)' }}>{eurFmt.format(totalEur)}</strong></span>
+          <span>Invested: <strong style={{ color: 'var(--clr-positive)' }}>{eurFmt.format(assets.totalInvestedEur ?? 0)}</strong></span>
           <span>Liabilities: <strong style={{ color: 'var(--clr-negative)' }}>{eurFmt.format(totalLiabilitiesEur)}</strong></span>
         </div>
       </div>

@@ -191,9 +191,15 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   // -------------------------------------------------------------------------
   // 5. Net monthly income (annualised projection based on YTD data)
   // -------------------------------------------------------------------------
-  // Formula: (income_this_year - tax) / current_month * 12
-  const netAnnualIncome =
-    currentMonth > 0 ? ((thisYearTotalIncome - expectedTax) / currentMonth) * 12 : 0;
+  const startOfYear = new Date(currentYear, 0, 1);
+  const daysPassed = Math.max(1, Math.ceil((now - startOfYear) / (1000 * 60 * 60 * 24)));
+  const isLeapYear = (currentYear % 4 === 0 && currentYear % 100 !== 0) || (currentYear % 400 === 0);
+  const daysInYear = isLeapYear ? 366 : 365;
+
+  // Formula: (netTaxableProfit - expectedTax) / daysPassed * daysInYear
+  const netAnnualIncome = ((netTaxableProfit - expectedTax) / daysPassed) * daysInYear;
+
+  const netMonthlyIncomeRaw = netAnnualIncome / 12;
 
   // -------------------------------------------------------------------------
   // 6. Monthly breakdown for chart (all months in range)
@@ -305,6 +311,7 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   // 8. Assets (all accounts, EUR-converted)
   // -------------------------------------------------------------------------
   function mapAccount(acc, type) {
+    if (acc.balanceEur !== undefined) return acc; // Pre-mapped external account
     const attrs = acc.attributes;
     const currency = attrs.currency_code ?? 'EUR';
     const balance = parseFloat(attrs.current_balance ?? '0');
@@ -321,8 +328,14 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
     };
   }
 
-  const assetList = assetAccounts.map((a) => mapAccount(a, 'asset'));
-  const liabilityList = liabilityAccounts.map((a) => mapAccount(a, 'liability'));
+  const ignoredNames = new Set(config.firefly.ignoredAccounts.map(n => n.toLowerCase()));
+  const isIgnored = (acc) => {
+    const name = acc.name || acc.attributes?.name || '';
+    return ignoredNames.has(name.toLowerCase());
+  };
+
+  const assetList = assetAccounts.filter(a => !isIgnored(a)).map((a) => mapAccount(a, 'asset'));
+  const liabilityList = liabilityAccounts.filter(a => !isIgnored(a)).map((a) => mapAccount(a, 'liability'));
 
   const totalAssetsEur = assetList.reduce((s, a) => s + a.balanceEur, 0);
   const totalLiabilitiesEur = liabilityList.reduce((s, a) => s + Math.abs(a.balanceEur), 0);
@@ -390,6 +403,7 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
     },
     netMonthlyIncome: {
       projected: netAnnualIncome,
+      monthly: netMonthlyIncomeRaw,
       currentMonth,
     },
     assets: {
@@ -402,6 +416,13 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
       totalBtcEur: assetList.filter(a => a.currency === 'BTC').reduce((s, a) => s + a.balanceEur, 0),
       totalAda: assetList.filter(a => a.currency === 'ADA').reduce((s, a) => s + a.balance, 0),
       totalAdaEur: assetList.filter(a => a.currency === 'ADA').reduce((s, a) => s + a.balanceEur, 0),
+      totalInvestedEur: assetList.filter(a => a.currency === 'BTC' || a.currency === 'ADA' || (a.id.startsWith('t212_') && a.id !== 't212_cash')).reduce((s, a) => s + a.balanceEur, 0),
+      investedStocks: assetList.filter(a => a.id.startsWith('t212_') && a.id !== 't212_cash').map(a => ({
+        name: a.name.replace(' (Trading212)', ''),
+        ticker: a.ticker || a.name.split(' ')[0],
+        balance: a.balance,
+        balanceEur: a.balanceEur
+      })),
     },
     categories: {
       expenses: categoryExpenses,

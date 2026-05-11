@@ -122,16 +122,22 @@ export default function TaxBreakdown({ tax, netMonthlyIncome, config: cfg }) {
       <div className="tax-divider" style={{ marginTop: 'var(--space-4)' }} aria-hidden="true" />
       <div style={{ marginTop: 'var(--space-4)' }}>
         <div className="card-title" style={{ marginBottom: 'var(--space-3)' }}>
-          Net Annual Income Projection (Month {netMonthlyIncome.currentMonth})
+          Net Income Projection (Month {netMonthlyIncome.currentMonth})
         </div>
         <div className="tax-row">
-          <span className="tax-row-label">After Expected Tax</span>
+          <span className="tax-row-label">After Expected Tax (Annualized)</span>
           <span className="tax-row-value text-positive">
             {eurFmt.format(netMonthlyIncome.projected)}
           </span>
         </div>
+        <div className="tax-row">
+          <span className="tax-row-label">After Expected Tax (Monthly)</span>
+          <span className="tax-row-value text-positive" style={{ opacity: 0.8 }}>
+            {eurFmt.format(netMonthlyIncome.monthly)}
+          </span>
+        </div>
         <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', marginTop: 'var(--space-3)' }}>
-          Formula: (YTD income − expected tax) ÷ current month × 12
+          Formula: (Net Taxable Profit − Expected Tax Total) ÷ days passed in year × total days in year
         </p>
       </div>
     </div>
