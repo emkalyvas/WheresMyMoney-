@@ -31,4 +31,12 @@ module.exports = {
     cacheTtlMinutes: parseInt(process.env.STATISTICS_CACHE_TTL_MINUTES || '15', 10),
     companyTag: process.env.COMPANY_TAG || 'MnApps',
   },
+
+  projections: {
+    targetAssetGoal: parseFloat(process.env.TARGET_ASSET_GOAL || '1000000'),
+    investmentGrowthRate: parseFloat(process.env.EXPECTED_INVESTMENT_GROWTH_RATE || '0.07'),
+    safeWithdrawalRate: parseFloat(process.env.SAFE_WITHDRAWAL_RATE || '0.04'),
+    monthlyInvestmentAmount: parseFloat(process.env.MONTHLY_INVESTMENT_AMOUNT || '500'),
+    horizonYears: parseInt(process.env.PROJECTION_HORIZON_YEARS || '30', 10),
+  },
 };

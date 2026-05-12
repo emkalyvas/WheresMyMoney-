@@ -1,0 +1,17 @@
+{
+  "name": "WheresMyMoney!",
+  "short_name": "WMM",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070c1a",
+  "theme_color": "#3b82f6",
+  "description": "Personal economic dashboard",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

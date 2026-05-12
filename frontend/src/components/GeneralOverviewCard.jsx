@@ -101,32 +101,30 @@ export default function GeneralOverviewCard({ data }) {
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className={`tax-row-value ${r.valueClass ?? ''}`}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+            {r.growth != null && (
+              <span
+                className={`badge ${r.growth > 0
+                  ? (r.invertGrowthColor ? 'badge-negative' : 'badge-positive')
+                  : r.growth < 0
+                    ? (r.invertGrowthColor ? 'badge-positive' : 'badge-negative')
+                    : ''
+                  }`}
+                style={{ fontSize: '11px', padding: '4px 6px' }}
+              >
+                {r.growth > 0 ? '▲' : r.growth < 0 ? '▼' : '−'} {Math.abs(r.growth).toFixed(1)}%
+              </span>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <span className={`tax-row-value ${r.valueClass ?? ''}`} style={{ lineHeight: 1.2 }}>
                 {r.value}
               </span>
               {r.growth != null && (
-                <span
-                  className={`badge ${r.growth > 0
-                    ? (r.invertGrowthColor ? 'badge-negative' : 'badge-positive')
-                    : r.growth < 0
-                      ? (r.invertGrowthColor ? 'badge-positive' : 'badge-negative')
-                      : ''
-                    }`}
-                >
-                  {r.growth > 0 ? '▲' : r.growth < 0 ? '▼' : '−'} {Math.abs(r.growth).toFixed(1)}%
+                <span style={{ fontSize: '10px', color: 'var(--clr-text-muted)', marginTop: '2px' }}>
+                  Prev: {eurFmt.format(r.previousValue)}
                 </span>
               )}
             </div>
-            {r.growth != null && (
-              <div style={{ marginTop: '0' }} >
-                <span style={{ fontSize: '11px', color: 'var(--clr-text-muted)' }}>
-                  Prev: {eurFmt.format(r.previousValue)}
-                </span>
-              </div>
-            )}
-
           </div>
         </div>
       ))}

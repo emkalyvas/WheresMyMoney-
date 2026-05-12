@@ -94,29 +94,31 @@ function CategoryList({ title, id, items, colors, invertGrowthColor }) {
               />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
               {growth != null && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ fontSize: '10px', color: 'var(--clr-text-muted)' }}>
+                <span 
+                  className={`badge ${
+                    growth > 0 
+                      ? (invertGrowthColor ? 'badge-negative' : 'badge-positive') 
+                      : growth < 0
+                        ? (invertGrowthColor ? 'badge-positive' : 'badge-negative')
+                        : ''
+                  }`}
+                  style={{ fontSize: '11px', padding: '4px 6px' }}
+                >
+                  {growth > 0 ? '▲' : growth < 0 ? '▼' : '−'} {Math.abs(growth).toFixed(1)}%
+                </span>
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <span className="category-value" style={{ color: 'var(--clr-text-primary)', lineHeight: 1.2 }}>
+                  {eurFmt.format(item.monthlyMean)}
+                </span>
+                {growth != null && (
+                  <span style={{ fontSize: '10px', color: 'var(--clr-text-muted)', marginTop: '2px' }}>
                     Prev: {eurFmt.format(item.previousMonthlyMean)}
                   </span>
-                  <span 
-                    className={`badge ${
-                      growth > 0 
-                        ? (invertGrowthColor ? 'badge-negative' : 'badge-positive') 
-                        : growth < 0
-                          ? (invertGrowthColor ? 'badge-positive' : 'badge-negative')
-                          : ''
-                    }`}
-                    style={{ fontSize: '10px', padding: '2px 4px' }}
-                  >
-                    {growth > 0 ? '▲' : growth < 0 ? '▼' : '−'} {Math.abs(growth).toFixed(1)}%
-                  </span>
-                </div>
-              )}
-              <span className="category-value" style={{ color: 'var(--clr-text-primary)' }}>
-                {eurFmt.format(item.monthlyMean)}
-              </span>
+                )}
+              </div>
             </div>
           </div>
         );

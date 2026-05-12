@@ -17,6 +17,8 @@ import MonthlyChart from './MonthlyChart';
 import CategoryBreakdown from './CategoryBreakdown';
 import MonthlyOverviewCard from './MonthlyOverviewCard';
 import GeneralOverviewCard from './GeneralOverviewCard';
+import ProjectionCard from './ProjectionCard';
+
 
 /** Choose the right icon and badge for a percentage change value. */
 function trendBadge(pct) {
@@ -27,9 +29,9 @@ function trendBadge(pct) {
 }
 
 /** Section wrapper with a coloured accent bar and title. */
-function Section({ title, children }) {
+function Section({ id, title, children }) {
   return (
-    <section className="section">
+    <section id={id} className="section">
       <div className="section-header">
         <div className="section-title-accent" aria-hidden="true" />
         <h2 className="section-title">{title}</h2>
@@ -54,22 +56,22 @@ export default function Dashboard({ data }) {
   return (
     <div>
       {/* ── 1. General Overview ────────────────────────────────────────────── */}
-      <Section title="Overview">
+      <Section id="overview" title="Overview">
         <GeneralOverviewCard data={data} />
       </Section>
 
       {/* ── 2. Monthly Overview ──────────────────────────────────────────── */}
-      <Section title="Monthly Overview">
+      <Section id="monthly-overview" title="Monthly Overview">
         <MonthlyOverviewCard data={data} />
       </Section>
 
       {/* ── 2. Monthly Chart ─────────────────────────────────────────────── */}
-      <Section title="Monthly Trend">
+      <Section id="monthly-trend" title="Monthly Trend">
         <MonthlyChart monthlyData={monthlyData} />
       </Section>
 
       {/* ── 3. Tax & Net Income ──────────────────────────────────────────── */}
-      <Section title="Tax Calculation">
+      <Section id="tax-calculation" title="Tax Calculation">
         <div className="two-col">
           <TaxBreakdown tax={tax} netMonthlyIncome={netMonthlyIncome} config={tax.config} />
 
@@ -115,13 +117,18 @@ export default function Dashboard({ data }) {
       </Section>
 
       {/* ── 4. Category Breakdown ────────────────────────────────────────── */}
-      <Section title="Category Breakdown">
+      <Section id="category-breakdown" title="Category Breakdown">
         <CategoryBreakdown expenses={categories.expenses} income={categories.income} />
       </Section>
 
       {/* ── 5. Assets ────────────────────────────────────────────────────── */}
-      <Section title="Assets &amp; Liabilities">
+      <Section id="assets-liabilities" title="Assets & Liabilities">
         <AssetOverview assets={assets} />
+      </Section>
+
+      {/* ── 6. Future Projections ────────────────────────────────────────── */}
+      <Section id="future-projections" title="Future Projections">
+        <ProjectionCard projections={data.projections} />
       </Section>
     </div>
   );
