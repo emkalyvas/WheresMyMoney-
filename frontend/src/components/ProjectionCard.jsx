@@ -41,10 +41,10 @@ function MilestoneBadge({ icon: Icon, label, value, yearFull, yearConfig, config
         {value ? eurFmt.format(value) : 'N/A'}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'var(--space-3)', alignItems: 'flex-start' }}>
-        <div className="badge" style={{ backgroundColor: 'rgba(2, 164, 227, 0.15)', color: '#02a4e3' }}>
+        <div className="badge" style={{ backgroundColor: 'rgba(2, 164, 227, 0.15)', color: '#02a4e3', whiteSpace: 'normal', textAlign: 'left' }}>
           {yearFull ? `Reached in ${yearFull}` : 'Not reached'} (All Surplus)
         </div>
-        <div className="badge" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+        <div className="badge" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', whiteSpace: 'normal', textAlign: 'left' }}>
           {yearConfig ? `Reached in ${yearConfig}` : 'Not reached'} ({eurFmt.format(configAmount)}/mo Inv.)
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function ProjectionCard({ projections }) {
         Projected growth assuming a {(investmentGrowthRate * 100).toFixed(1)}% annual investment return.
       </div>
 
-      <div className="stats-grid" style={{ marginBottom: 'var(--space-6)', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+      <div className="stats-grid" style={{ marginBottom: 'var(--space-6)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
         <MilestoneBadge
           icon={TrendingUp}
           label={`Target Goal`}

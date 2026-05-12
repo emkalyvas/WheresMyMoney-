@@ -83,6 +83,7 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -94,6 +95,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
+  overflow-x: hidden;
 
   /* Subtle animated mesh background */
   background-image:
@@ -122,6 +124,7 @@ body {
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
+  min-width: 0; /* prevent flex children from overflowing */
 }
 
 /* ── 4. Header ────────────────────────────────────────────────────────────── */
@@ -423,6 +426,7 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: var(--font-size-sm);
   gap: var(--space-4);
+  flex-wrap: wrap;
 }
 
 .tax-row:last-child { border-bottom: none; }
@@ -433,6 +437,8 @@ body {
   align-items: center;
   gap: var(--space-2);
   flex: 1;
+  min-width: 0;
+  word-break: break-word;
 }
 
 .tax-row-value {
@@ -520,9 +526,9 @@ body {
 /* ── 10. Category bars ────────────────────────────────────────────────────── */
 .category-item {
   display: grid;
-  grid-template-columns: 160px 1fr auto;
+  grid-template-columns: minmax(100px, 140px) 1fr auto;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   padding: var(--space-3) 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
@@ -763,17 +769,145 @@ body {
 }
 
 @media (max-width: 768px) {
-  .main-content { padding: var(--space-4); }
-  .header { padding: var(--space-4); }
+  .main-content {
+    padding: var(--space-4) var(--space-3) var(--space-8);
+  }
+  
+  .header {
+    padding: var(--space-3) var(--space-4);
+  }
+  
+  .header-title {
+    font-size: var(--font-size-base);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
   .two-col,
-  .three-col { grid-template-columns: 1fr; }
-  .stat-cards-grid { grid-template-columns: 1fr 1fr; }
-  .category-item { grid-template-columns: 120px 1fr auto; }
-  .header-title { font-size: var(--font-size-base); }
+  .three-col {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+
+  /* Category bars: 2-row layout on mobile */
+  .category-item {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: var(--space-2);
+  }
+
+  .category-item .category-name {
+    grid-column: 1 / 2;
+    grid-row: 1;
+  }
+
+  .category-item .category-bar-track {
+    grid-column: 1 / 2;
+    grid-row: 2;
+  }
+
+  .category-item > div:last-child {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+
+  /* Tax rows: allow the value to sit on next line if needed */
+  .tax-row {
+    align-items: flex-start;
+  }
+
+  .tax-total-row {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* Cards: tighter padding on mobile */
+  .card {
+    padding: var(--space-4);
+  }
+
+  .net-worth-display {
+    padding: var(--space-4);
+  }
+
+  .net-worth-value {
+    font-size: var(--font-size-3xl);
+  }
+
+  /* Section spacing */
+  .section {
+    margin-bottom: var(--space-6);
+  }
+
+  /* Chart height reduction on mobile */
+  .chart-wrapper {
+    height: 220px;
+  }
+
+  /* Stat card value size reduction */
+  .stat-card-value {
+    font-size: var(--font-size-2xl);
+  }
 }
 
 @media (max-width: 480px) {
-  .stat-cards-grid { grid-template-columns: 1fr; }
+  .main-content {
+    padding: var(--space-3) var(--space-3) var(--space-8);
+  }
+
+  .stat-cards-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .header-title {
+    max-width: 120px;
+    font-size: var(--font-size-sm);
+  }
+
+  .card {
+    padding: var(--space-3);
+  }
+
+  /* Very small screen category bars: simpler single-column */
+  .category-item {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: var(--space-1);
+  }
+
+  .category-item .category-name {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .category-item .category-bar-track {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .category-item > div:last-child {
+    grid-column: 1;
+    grid-row: 3;
+    justify-content: flex-start;
+  }
+
+  /* Shrink net worth hero on tiny screens */
+  .net-worth-value {
+    font-size: var(--font-size-2xl);
+  }
+
+  /* Chart even smaller on tiny screens */
+  .chart-wrapper {
+    height: 180px;
+  }
 }
 
 /* ── 17. Animations ───────────────────────────────────────────────────────── */

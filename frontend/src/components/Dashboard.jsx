@@ -146,15 +146,15 @@ function YoYBlock({ label, thisYear, prevYear, pct, currentYear, previousYear, p
       <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 'var(--space-3)' }}>
         {label}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 'var(--space-4)' }}>
-        <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+        <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', marginBottom: 2 }}>{previousYear}</div>
-          <div style={{ fontSize: 'var(--font-size-base)', fontWeight: 600 }}>{eurFmt.format(prevYear)}</div>
+          <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>{eurFmt.format(prevYear)}</div>
         </div>
-        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-        <div style={{ textAlign: 'right' }}>
+        <div style={{ flex: '0 0 24px', height: 1, background: 'rgba(255,255,255,0.06)', alignSelf: 'center' }} />
+        <div style={{ textAlign: 'right', minWidth: 0 }}>
           <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', marginBottom: 2 }}>{currentYear}</div>
-          <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>{eurFmt.format(thisYear)}</div>
+          <div style={{ fontSize: 'var(--font-size-base)', fontWeight: 700 }}>{eurFmt.format(thisYear)}</div>
         </div>
       </div>
       {pct != null && (
