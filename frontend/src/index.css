@@ -110,6 +110,12 @@ body {
   flex-direction: column;
 }
 
+.layout-container {
+  display: flex;
+  flex: 1;
+  width: 100%;
+}
+
 .main-content {
   flex: 1;
   padding: var(--space-8) var(--space-8) var(--space-12);
@@ -190,6 +196,73 @@ body {
 .header-refresh-btn:hover {
   background: var(--clr-glass-hover);
   border-color: var(--clr-accent-blue);
+}
+
+.hamburger-btn {
+  display: none;
+}
+
+/* ── 4.1 Sidebar ──────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 250px;
+  background: rgba(13, 22, 41, 0.4);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid var(--clr-glass-border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 73px; /* approximate header height */
+  height: calc(100vh - 73px);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-header h2 {
+  font-size: var(--font-size-sm);
+  color: var(--clr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.sidebar-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--clr-text-secondary);
+  cursor: pointer;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--space-4) var(--space-4);
+  gap: var(--space-2);
+}
+
+.sidebar-link {
+  padding: var(--space-3) var(--space-4);
+  color: var(--clr-text-primary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar-link:hover {
+  background: var(--clr-glass-hover);
+  color: var(--clr-accent-blue);
+}
+
+.sidebar-overlay {
+  display: none;
 }
 
 /* ── 5. Glass Card ────────────────────────────────────────────────────────── */
@@ -304,6 +377,7 @@ body {
 /* ── 7. Section Layout ────────────────────────────────────────────────────── */
 .section {
   margin-bottom: var(--space-8);
+  scroll-margin-top: 100px;
 }
 
 .section-header {
@@ -635,6 +709,57 @@ body {
 /* ── 16. Responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 1100px) {
   .three-col { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 1024px) {
+  .hamburger-btn { display: flex; }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 200;
+    transition: right var(--transition-base);
+    border-right: none;
+    border-left: 1px solid var(--clr-glass-border);
+    background: var(--clr-bg-surface);
+  }
+  
+  .sidebar.open {
+    right: 0;
+  }
+  
+  .sidebar-header {
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--clr-glass-border);
+    margin-bottom: var(--space-4);
+  }
+  
+  .sidebar-close-btn { display: block; }
+  
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 150;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base);
+  }
+  
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .header-meta > span, 
+  #btn-download {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {

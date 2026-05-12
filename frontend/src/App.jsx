@@ -1,12 +1,38 @@
 import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
+import Sidebar from './components/Sidebar';
 import { fetchStatistics } from './api/client';
 
 export default function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_BACKEND_PORT || 3001}`;
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/report/pdf`);
+      if (!response.ok) throw new Error('Failed to generate PDF');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const now = new Date();
+      a.href = url;
+      a.download = `WheresMyMoney_Report_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed:', err);
+      alert('Failed to generate PDF report. Please check that the backend is running.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -33,13 +59,22 @@ export default function App() {
         lastUpdated={data?.meta?.lastUpdated}
         onRefresh={load}
         loading={loading}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
       />
 
-      <main className="main-content" id="main">
-        {loading && !data && <LoadingState />}
-        {error && !data && <ErrorState error={error} onRetry={load} />}
-        {data && <Dashboard data={data} />}
-      </main>
+      <div className="layout-container">
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+          onDownload={handleDownload}
+          downloading={downloading}
+        />
+        <main className="main-content" id="main">
+          {loading && !data && <LoadingState />}
+          {error && !data && <ErrorState error={error} onRetry={load} />}
+          {data && <Dashboard data={data} />}
+        </main>
+      </div>
     </div>
   );
 }

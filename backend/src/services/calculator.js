@@ -346,7 +346,64 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
     meanMonthlyExpenses > 0 ? totalAssetsEur / meanMonthlyExpenses : null;
 
   // -------------------------------------------------------------------------
-  // 9. Assemble final payload
+  // 9. Future Projections
+  // -------------------------------------------------------------------------
+  const projCfg = config.projections;
+  const currentTotalInvested = assetList.filter(a => a.currency === 'BTC' || a.currency === 'ADA' || (a.id.startsWith('t212_') && a.id !== 't212_cash')).reduce((s, a) => s + a.balanceEur, 0);
+  const currentCash = totalAssetsEur - currentTotalInvested;
+  
+  const annualExpenses = meanMonthlyExpenses * 12;
+  const retirementTarget = annualExpenses > 0 ? annualExpenses / projCfg.safeWithdrawalRate : null;
+  const targetAssetGoal = projCfg.targetAssetGoal;
+  const investmentGrowthRate = projCfg.investmentGrowthRate;
+  
+  const projectionData = [];
+  let investedFullSurplus = currentTotalInvested;
+  let investedConfiguredAmount = currentTotalInvested;
+  
+  // Annual surplus (what we save in a year)
+  const annualSurplus = meanMonthlySurplus > 0 ? meanMonthlySurplus * 12 : 0;
+  // Configured annual investment
+  const configuredAnnualInvestment = projCfg.monthlyInvestmentAmount * 12;
+  
+  let retirementYearFullSurplus = null;
+  let retirementYearConfiguredAmount = null;
+  let targetYearFullSurplus = null;
+  let targetYearConfiguredAmount = null;
+  
+  for (let y = 0; y <= projCfg.horizonYears; y++) {
+    const yearLabel = currentYear + y;
+    
+    const totalFullSurplus = investedFullSurplus + currentCash;
+    const totalConfiguredAmount = investedConfiguredAmount + currentCash;
+    
+    projectionData.push({
+      year: yearLabel,
+      fullSurplusAssets: totalFullSurplus,
+      configuredAmountAssets: totalConfiguredAmount,
+    });
+    
+    if (retirementTarget && totalFullSurplus >= retirementTarget && retirementYearFullSurplus === null) {
+      retirementYearFullSurplus = yearLabel;
+    }
+    if (totalFullSurplus >= targetAssetGoal && targetYearFullSurplus === null) {
+      targetYearFullSurplus = yearLabel;
+    }
+    
+    if (retirementTarget && totalConfiguredAmount >= retirementTarget && retirementYearConfiguredAmount === null) {
+      retirementYearConfiguredAmount = yearLabel;
+    }
+    if (totalConfiguredAmount >= targetAssetGoal && targetYearConfiguredAmount === null) {
+      targetYearConfiguredAmount = yearLabel;
+    }
+    
+    // Grow and add contributions for next year
+    investedFullSurplus = investedFullSurplus * (1 + investmentGrowthRate) + annualSurplus;
+    investedConfiguredAmount = investedConfiguredAmount * (1 + investmentGrowthRate) + configuredAnnualInvestment;
+  }
+
+  // -------------------------------------------------------------------------
+  // 10. Assemble final payload
   // -------------------------------------------------------------------------
   return {
     summary: {
@@ -434,6 +491,19 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
       months: runwayMonths,
       totalAssetsEur,
       meanMonthlyExpenses,
+    },
+    projections: {
+      data: projectionData,
+      targetGoal: targetAssetGoal,
+      retirementTarget: retirementTarget,
+      investmentGrowthRate: investmentGrowthRate,
+      monthlyInvestmentAmount: projCfg.monthlyInvestmentAmount,
+      milestones: {
+        retirementYearFullSurplus,
+        retirementYearConfiguredAmount,
+        targetYearFullSurplus,
+        targetYearConfiguredAmount,
+      }
     },
     meta: {
       lastUpdated: now.toISOString(),
