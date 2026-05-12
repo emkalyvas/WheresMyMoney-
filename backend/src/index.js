@@ -32,7 +32,7 @@ app.use('/api/statistics', statisticsRouter);
 app.get('/api/report/pdf', async (_req, res) => {
   try {
     console.log('[Report] Generating on-demand PDF report…');
-    const frontendUrl = `http://frontend:80`;
+    const frontendUrl = process.env.FRONTEND_INTERNAL_URL || `http://frontend:3000`;
     const pdfBuffer = await generateDashboardPdf(frontendUrl);
 
     const now = new Date();

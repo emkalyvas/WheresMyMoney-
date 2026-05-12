@@ -43,7 +43,7 @@ function startScheduler() {
   const recipients = REPORT_EMAILS.split(',').map((e) => e.trim()).filter(Boolean);
 
   // The frontend URL accessible from within the Docker network
-  const frontendUrl = `http://frontend:80`;
+  const frontendUrl = process.env.FRONTEND_INTERNAL_URL || `http://frontend:3000`;
 
   cron.schedule(cronExpression, async () => {
     const now = new Date();

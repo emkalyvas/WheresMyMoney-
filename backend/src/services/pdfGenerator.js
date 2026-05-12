@@ -6,7 +6,7 @@ const puppeteer = require('puppeteer');
  * Launches a headless Chromium browser, navigates to the frontend dashboard,
  * waits for the data to fully load, and returns the page as a PDF buffer.
  *
- * @param {string} frontendUrl - URL of the frontend to render (e.g., http://frontend:80)
+ * @param {string} frontendUrl - URL of the frontend to render (e.g., http://frontend:3000)
  * @returns {Promise<Buffer>} PDF buffer
  */
 async function generateDashboardPdf(frontendUrl) {

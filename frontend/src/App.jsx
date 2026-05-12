@@ -11,12 +11,10 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
-  const BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_BACKEND_PORT || 3001}`;
-
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/api/report/pdf`);
+      const response = await fetch(`/api/report/pdf`);
       if (!response.ok) throw new Error('Failed to generate PDF');
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
