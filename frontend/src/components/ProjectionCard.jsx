@@ -30,21 +30,37 @@ function ProjectionTooltip({ active, payload, label }) {
 }
 
 /** Milestone Badge Component */
-function MilestoneBadge({ icon: Icon, label, value, yearFull, yearConfig, configAmount }) {
+function MilestoneBadge({ icon: Icon, label, value, yearFull, yearConfig, configAmount, onMetricClick, paths }) {
   return (
     <div className="stat-card fade-in-up" style={{ padding: 'var(--space-4)' }}>
-      <div className="stat-card-header">
-        <div className="stat-icon"><Icon size={20} /></div>
-        <div className="stat-label">{label}</div>
+      <div className="stat-card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+        <div className="stat-icon" style={{ color: 'var(--clr-text-secondary)' }}><Icon size={18} /></div>
+        <div className="stat-label" style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--clr-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
       </div>
-      <div className="stat-value" style={{ fontSize: '1.25rem' }}>
+      <div 
+        className={`stat-value ${onMetricClick && paths?.value ? 'clickable' : ''}`}
+        onClick={() => onMetricClick && paths?.value && onMetricClick({ path: paths.value, label: `${label} Target`, format: 'currency' })}
+        style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '16px' }}
+      >
         {value ? eurFmt.format(value) : 'N/A'}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'var(--space-3)', alignItems: 'flex-start' }}>
-        <div className="badge" style={{ backgroundColor: 'rgba(2, 164, 227, 0.15)', color: '#02a4e3', whiteSpace: 'normal', textAlign: 'left' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+        <div 
+          className={`badge ${onMetricClick && paths?.yearFull ? 'clickable' : ''}`} 
+          onClick={() => onMetricClick && paths?.yearFull && onMetricClick({ path: paths.yearFull, label: `${label} Year (All Surplus)`, format: 'number', invertTrendColor: true })}
+          style={{ backgroundColor: 'rgba(2, 164, 227, 0.15)', color: '#02a4e3', padding: '4px 10px', fontSize: '0.8rem', cursor: onMetricClick && paths?.yearFull ? 'pointer' : 'default', transition: 'background 0.2s' }}
+          onMouseEnter={(e) => onMetricClick && paths?.yearFull && (e.currentTarget.style.backgroundColor = 'rgba(2, 164, 227, 0.25)')}
+          onMouseLeave={(e) => onMetricClick && paths?.yearFull && (e.currentTarget.style.backgroundColor = 'rgba(2, 164, 227, 0.15)')}
+        >
           {yearFull ? `Reached in ${yearFull}` : 'Not reached'} (All Surplus)
         </div>
-        <div className="badge" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', whiteSpace: 'normal', textAlign: 'left' }}>
+        <div 
+          className={`badge ${onMetricClick && paths?.yearConfig ? 'clickable' : ''}`}
+          onClick={() => onMetricClick && paths?.yearConfig && onMetricClick({ path: paths.yearConfig, label: `${label} Year (Fixed Inv.)`, format: 'number', invertTrendColor: true })}
+          style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '4px 10px', fontSize: '0.8rem', cursor: onMetricClick && paths?.yearConfig ? 'pointer' : 'default', transition: 'background 0.2s' }}
+          onMouseEnter={(e) => onMetricClick && paths?.yearConfig && (e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.25)')}
+          onMouseLeave={(e) => onMetricClick && paths?.yearConfig && (e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.15)')}
+        >
           {yearConfig ? `Reached in ${yearConfig}` : 'Not reached'} ({eurFmt.format(configAmount)}/mo Inv.)
         </div>
       </div>
@@ -56,7 +72,7 @@ function MilestoneBadge({ icon: Icon, label, value, yearFull, yearConfig, config
  * Future Projections line chart.
  * Shows projected assets over a configured horizon based on two scenarios.
  */
-export default function ProjectionCard({ projections }) {
+export default function ProjectionCard({ projections, onMetricClick }) {
   if (!projections || !projections.data || !projections.data.length) {
     return null;
   }
@@ -80,6 +96,7 @@ export default function ProjectionCard({ projections }) {
       </div>
 
       <div className="stats-grid" style={{ marginBottom: 'var(--space-6)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
+
         <MilestoneBadge
           icon={TrendingUp}
           label={`Target Goal`}
@@ -87,6 +104,11 @@ export default function ProjectionCard({ projections }) {
           yearFull={milestones.targetYearFullSurplus}
           yearConfig={milestones.targetYearConfiguredAmount}
           configAmount={monthlyInvestmentAmount}
+          onMetricClick={onMetricClick}
+          paths={{
+            yearFull: 'projections.milestones.targetYearFullSurplus',
+            yearConfig: 'projections.milestones.targetYearConfiguredAmount'
+          }}
         />
         <MilestoneBadge
           icon={Clock}
@@ -95,6 +117,12 @@ export default function ProjectionCard({ projections }) {
           yearFull={milestones.retirementYearFullSurplus}
           yearConfig={milestones.retirementYearConfiguredAmount}
           configAmount={monthlyInvestmentAmount}
+          onMetricClick={onMetricClick}
+          paths={{
+            value: 'projections.retirementTarget',
+            yearFull: 'projections.milestones.retirementYearFullSurplus',
+            yearConfig: 'projections.milestones.retirementYearConfiguredAmount'
+          }}
         />
       </div>
 

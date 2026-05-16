@@ -70,21 +70,27 @@ async function fetchTransactions() {
  * Fetches all asset accounts from Firefly III.
  * These represent the user's personal holdings (checking, savings, etc.).
  *
+ * @param {string} [date] - YYYY-MM-DD to fetch balances as they were on this date.
  * @returns {Promise<Array>}
  */
-async function fetchAssetAccounts() {
+async function fetchAssetAccounts(date) {
   const client = createClient();
-  return fetchAllPages(client, '/accounts', { type: 'asset' });
+  const params = { type: 'asset' };
+  if (date) params.date = date;
+  return fetchAllPages(client, '/accounts', params);
 }
 
 /**
  * Fetches all liability accounts (loans, mortgages, debts) from Firefly III.
  *
+ * @param {string} [date] - YYYY-MM-DD to fetch balances as they were on this date.
  * @returns {Promise<Array>}
  */
-async function fetchLiabilityAccounts() {
+async function fetchLiabilityAccounts(date) {
   const client = createClient();
-  return fetchAllPages(client, '/accounts', { type: 'liabilities' });
+  const params = { type: 'liabilities' };
+  if (date) params.date = date;
+  return fetchAllPages(client, '/accounts', params);
 }
 
 /**

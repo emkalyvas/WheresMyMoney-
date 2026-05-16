@@ -24,6 +24,7 @@ module.exports = {
   },
 
   calculations: {
+    taxModule: process.env.TAX_MODULE || 'gr_oe',
     startDate: process.env.START_DATE || '2023-01-01',
     incomeTaxRate: parseFloat(process.env.INCOME_TAX_RATE || '0.22'),
     businessTax: parseFloat(process.env.BUSINESS_TAX || '800'),

@@ -24,6 +24,7 @@ export function pctFmt(value, digits = 1) {
  *  - iconBg (string)         — CSS background for icon container
  *  - badge ({ text, type })  — optional badge: type = 'positive' | 'negative' | 'warning'
  *  - valueClass (string)     — extra CSS class on the value (e.g. 'text-positive')
+ *  - onClick (function)      — optional click handler
  */
 export default function StatCard({
   label,
@@ -34,9 +35,15 @@ export default function StatCard({
   iconBg,
   badge,
   valueClass = '',
+  onClick,
 }) {
   return (
-    <div className="card stat-card fade-in-up">
+    <div 
+      className={`card stat-card fade-in-up ${onClick ? 'clickable' : ''}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       {accentColor && (
         <div
           className="stat-card-accent"

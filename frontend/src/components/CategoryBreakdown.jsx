@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { eurFmt } from './StatCard';
 
 const EXPENSE_COLORS = [
@@ -19,7 +21,7 @@ const INCOME_COLORS = [
  *  - expenses: array of { name, monthlyMean, total, transactionCount }
  *  - income:   same shape
  */
-export default function CategoryBreakdown({ expenses, income }) {
+export default function CategoryBreakdown({ expenses, income, onMetricClick }) {
   return (
     <div className="two-col">
       <CategoryList
@@ -28,6 +30,8 @@ export default function CategoryBreakdown({ expenses, income }) {
         items={expenses}
         colors={EXPENSE_COLORS}
         invertGrowthColor={true}
+        onMetricClick={onMetricClick}
+        type="expenses"
       />
       <CategoryList
         title="Income by Category"
@@ -35,12 +39,16 @@ export default function CategoryBreakdown({ expenses, income }) {
         items={income}
         colors={INCOME_COLORS}
         invertGrowthColor={false}
+        onMetricClick={onMetricClick}
+        type="income"
       />
     </div>
   );
 }
 
-function CategoryList({ title, id, items, colors, invertGrowthColor }) {
+function CategoryList({ title, id, items, colors, invertGrowthColor, onMetricClick, type }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (!items?.length) {
     return (
       <div className="card fade-in-up">
@@ -57,6 +65,8 @@ function CategoryList({ title, id, items, colors, invertGrowthColor }) {
     return ((current - previous) / Math.abs(previous)) * 100;
   };
 
+  const displayedItems = isExpanded ? items : items.slice(0, 10);
+
   return (
     <div className="card fade-in-up" id={id}>
       <div className="card-title">{title}</div>
@@ -64,7 +74,7 @@ function CategoryList({ title, id, items, colors, invertGrowthColor }) {
         Mean per month · sorted by total
       </div>
 
-      {items.slice(0, 10).map((item, i) => {
+      {displayedItems.map((item, i) => {
         const growth = getGrowth(item.monthlyMean, item.previousMonthlyMean);
         
         let rankIndicator = null;
@@ -77,7 +87,14 @@ function CategoryList({ title, id, items, colors, invertGrowthColor }) {
         }
 
         return (
-          <div className="category-item" key={item.name}>
+          <div 
+            className={`category-item ${onMetricClick ? 'clickable' : ''}`} 
+            key={item.name}
+            onClick={() => onMetricClick && onMetricClick({ path: `categories.${type}[?(@.name=="${item.name}")].monthlyMean`, label: `${item.name} (${type})`, format: 'currency' })}
+            style={onMetricClick ? { padding: 'var(--space-3)', margin: '0 calc(var(--space-3) * -1)', borderRadius: 'var(--radius-sm)', transition: 'background var(--transition-fast)' } : {}}
+            onMouseEnter={(e) => onMetricClick && (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)')}
+            onMouseLeave={(e) => onMetricClick && (e.currentTarget.style.background = 'transparent')}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
               <span className="category-name" title={item.name}>{item.name}</span>
               <span style={{ fontSize: '10px', flexShrink: 0 }}>{rankIndicator}</span>
@@ -123,6 +140,43 @@ function CategoryList({ title, id, items, colors, invertGrowthColor }) {
           </div>
         );
       })}
+
+      {items.length > 10 && (
+        <button
+          className="header-refresh-btn"
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{
+            width: '100%',
+            marginTop: 'var(--space-4)',
+            justifyContent: 'center',
+            background: 'var(--clr-glass-bg)',
+            border: '1px solid var(--clr-glass-border)',
+            padding: 'var(--space-2) var(--space-4)',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: 'var(--font-size-sm)',
+            color: 'var(--clr-text-secondary)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--clr-glass-hover)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--clr-glass-bg)')}
+        >
+          {isExpanded ? (
+            <>
+              <ChevronUp size={16} />
+              Show Less
+            </>
+          ) : (
+            <>
+              <ChevronDown size={16} />
+              Show {items.length - 10} More
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }

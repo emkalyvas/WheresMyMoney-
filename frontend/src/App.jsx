@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
+import HistoryModal from './components/HistoryModal';
 import { fetchStatistics } from './api/client';
 
 export default function App() {
@@ -10,23 +11,25 @@ export default function App() {
   const [error, setError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [selectedMetricHistory, setSelectedMetricHistory] = useState(null);
 
-  const handleDownload = async () => {
+  const handleDownload = async (format = 'pdf') => {
     setDownloading(true);
     try {
-      const response = await fetch(`/api/report/pdf`);
-      if (!response.ok) throw new Error('Failed to generate PDF');
+      const response = await fetch(`/api/report/${format}`);
+      if (!response.ok) throw new Error(`Failed to generate ${format.toUpperCase()}`);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       const now = new Date();
       a.href = url;
-      a.download = `WheresMyMoney_Report_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}.pdf`;
+      const extension = format === 'pdf' ? 'pdf' : 'html';
+      a.download = `WheresMyMoney_Report_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}.${extension}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Download failed:', err);
-      alert('Failed to generate PDF report. Please check that the backend is running.');
+      alert(`Failed to generate ${format.toUpperCase()} report. Please check that the backend is running.`);
     } finally {
       setDownloading(false);
     }
@@ -70,9 +73,16 @@ export default function App() {
         <main className="main-content" id="main">
           {loading && !data && <LoadingState />}
           {error && !data && <ErrorState error={error} onRetry={load} />}
-          {data && <Dashboard data={data} />}
+          {data && <Dashboard data={data} onMetricClick={setSelectedMetricHistory} />}
         </main>
       </div>
+
+      {selectedMetricHistory && (
+        <HistoryModal 
+          metric={selectedMetricHistory} 
+          onClose={() => setSelectedMetricHistory(null)} 
+        />
+      )}
     </div>
   );
 }
