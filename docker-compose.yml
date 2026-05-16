@@ -32,6 +32,8 @@ services:
       PROJECTION_HORIZON_YEARS: ${PROJECTION_HORIZON_YEARS:-30}
     ports:
       - "${BACKEND_PORT:-3001}:${BACKEND_PORT:-3001}"
+    volumes:
+      - ./backend/data:/app/data
     networks:
       - wmm-network
 

@@ -1,6 +1,20 @@
-import { X, FileDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, FileDown, ChevronUp } from 'lucide-react';
 
 export default function Sidebar({ isOpen, onClose, onDownload, downloading }) {
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowDownloadMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const sections = [
     { id: 'overview', label: 'Overview' },
     { id: 'monthly-overview', label: 'Monthly Overview' },
@@ -16,6 +30,12 @@ export default function Sidebar({ isOpen, onClose, onDownload, downloading }) {
     if (window.innerWidth <= 1024) {
       onClose();
     }
+  };
+
+  const triggerDownload = (format) => {
+    onDownload(format);
+    setShowDownloadMenu(false);
+    if (window.innerWidth <= 1024) onClose();
   };
 
   return (
@@ -45,18 +65,55 @@ export default function Sidebar({ isOpen, onClose, onDownload, downloading }) {
           ))}
         </nav>
         
-        <div className="sidebar-footer" style={{ marginTop: 'auto', padding: 'var(--space-4)' }}>
+        <div className="sidebar-footer" style={{ marginTop: 'auto', padding: 'var(--space-4)', position: 'relative' }} ref={menuRef}>
+          {showDownloadMenu && !downloading && (
+            <div style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: 'var(--space-4)',
+              right: 'var(--space-4)',
+              marginBottom: '8px',
+              background: 'var(--clr-surface)',
+              border: '1px solid var(--clr-border)',
+              borderRadius: 'var(--radius-sm)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              zIndex: 10,
+            }}>
+              <button 
+                onClick={() => triggerDownload('pdf')}
+                style={{ padding: '12px 16px', background: 'none', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)', color: 'var(--clr-text)', textAlign: 'left', cursor: 'pointer', fontSize: '14px', transition: 'background 0.2s' }}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+              >
+                Download PDF
+              </button>
+              <button 
+                onClick={() => triggerDownload('html')}
+                style={{ padding: '12px 16px', background: 'none', border: 'none', color: 'var(--clr-text)', textAlign: 'left', cursor: 'pointer', fontSize: '14px', transition: 'background 0.2s' }}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+              >
+                Download HTML
+              </button>
+            </div>
+          )}
           <button 
             className="retry-btn" 
-            style={{ width: '100%', justifyContent: 'center' }}
+            style={{ width: '100%', justifyContent: 'space-between', padding: '10px 16px' }}
             disabled={downloading}
             onClick={() => {
-              onDownload();
-              if (window.innerWidth <= 1024) onClose();
+              if (downloading) return;
+              setShowDownloadMenu(!showDownloadMenu);
             }}
           >
-            <FileDown size={16} />
-            {downloading ? 'Generating…' : 'Download Report'}
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FileDown size={16} />
+              {downloading ? 'Generating…' : 'Download Report'}
+            </span>
+            <ChevronUp size={16} style={{ transition: 'transform 0.2s', transform: showDownloadMenu ? 'rotate(180deg)' : 'none' }} />
           </button>
         </div>
       </aside>

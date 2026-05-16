@@ -88,7 +88,11 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   // -------------------------------------------------------------------------
   // 1. Normalise & filter transactions
   // -------------------------------------------------------------------------
-  const allJournals = normalizeTransactions(rawTransactions);
+  const rawAllJournals = normalizeTransactions(rawTransactions);
+  
+  // CRITICAL: Bound transactions by the 'now' date so backfill snapshots are accurate
+  const allJournals = rawAllJournals.filter((j) => j.date <= now);
+
   const journals = allJournals.filter((j) => j.date >= startDate && j.type !== 'transfer');
 
   const expenses = journals.filter((j) => j.type === 'withdrawal');
@@ -158,35 +162,20 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   // -------------------------------------------------------------------------
   // 4. Tax calculations (company transactions, current year)
   // -------------------------------------------------------------------------
-  const companyTag = cfg.companyTag;
+  const taxModules = require('./taxModules');
+  const activeTaxModule = taxModules.getActiveTaxModule();
   
-  const companyExpensesThisYear = thisYearExpenses
-    .filter((j) => j.tags && j.tags.includes(companyTag))
-    .reduce((acc, j) => acc + j.amount, 0);
-
-  const grossRevenue = thisYearIncome
-    .filter((j) => j.tags && j.tags.includes(companyTag))
-    .reduce((acc, j) => acc + j.amount, 0);
-
-  const netTaxableProfit = Math.max(0, grossRevenue - companyExpensesThisYear);
-
-  const corporateIncomeTax = netTaxableProfit * cfg.incomeTaxRate;
-  const businessTax = cfg.businessTax;
-  const advanceTax = corporateIncomeTax * cfg.advanceTaxRate;
-
-  // Extract previous year's advance tax from liability accounts
-  const previousTaxAccountName = `Φόρος Εισοδήματος ${previousYear}`;
-  const previousTaxAccount = liabilityAccounts.find(a => a.attributes?.name === previousTaxAccountName);
-  let previousAdvanceTax = 0;
-  if (previousTaxAccount && previousTaxAccount.attributes?.notes) {
-    const match = previousTaxAccount.attributes.notes.match(/Προκαταβολ[ηή]:\s*([\d.]+)/i);
-    if (match) {
-      previousAdvanceTax = parseFloat(match[1]);
-    }
+  let tax = { enabled: false, grossRevenue: 0, companyExpenses: 0, netTaxableProfit: 0, expectedTaxTotal: 0, effectiveTaxRate: 0 };
+  
+  if (activeTaxModule) {
+    tax = activeTaxModule.calculate({
+      allJournals,
+      liabilityAccounts,
+      currentYear,
+      previousYear,
+      config: cfg
+    });
   }
-
-  const expectedTax = corporateIncomeTax + businessTax + advanceTax - previousAdvanceTax;
-  const effectiveTaxRate = grossRevenue > 0 ? (expectedTax / grossRevenue) * 100 : 0;
 
   // -------------------------------------------------------------------------
   // 5. Net monthly income (annualised projection based on YTD data)
@@ -196,8 +185,10 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   const isLeapYear = (currentYear % 4 === 0 && currentYear % 100 !== 0) || (currentYear % 400 === 0);
   const daysInYear = isLeapYear ? 366 : 365;
 
-  // Formula: (netTaxableProfit - expectedTax) / daysPassed * daysInYear
-  const netAnnualIncome = ((netTaxableProfit - expectedTax) / daysPassed) * daysInYear;
+  // Formula: (netTaxableProfit - expectedTaxTotal) / daysPassed * daysInYear
+  const netAnnualIncome = tax.enabled 
+    ? ((tax.netTaxableProfit - tax.expectedTaxTotal) / daysPassed) * daysInYear
+    : 0;
 
   const netMonthlyIncomeRaw = netAnnualIncome / 12;
 
@@ -442,22 +433,7 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
       currentMonthName: currentMonthKey,
       previousMonthName: prevMonthKey,
     },
-    tax: {
-      grossRevenue,
-      companyExpenses: companyExpensesThisYear,
-      netTaxableProfit,
-      corporateIncomeTax,
-      businessTax,
-      advanceTax,
-      previousAdvanceTax,
-      expectedTax,
-      effectiveTaxRate,
-      config: {
-        incomeTaxRate: cfg.incomeTaxRate,
-        businessTax: cfg.businessTax,
-        advanceTaxRate: cfg.advanceTaxRate,
-      },
-    },
+    tax,
     netMonthlyIncome: {
       projected: netAnnualIncome,
       monthly: netMonthlyIncomeRaw,

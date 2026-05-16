@@ -43,6 +43,7 @@ yarn-error.log*
 *.db
 *.sqlite
 *.sqlite3
+backend/data/
 
 # Scratch files
 scratch.js

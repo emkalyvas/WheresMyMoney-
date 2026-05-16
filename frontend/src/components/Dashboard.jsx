@@ -45,7 +45,7 @@ function Section({ id, title, children }) {
  * Main dashboard — composes all stat cards and chart sections from the
  * statistics payload returned by the backend.
  */
-export default function Dashboard({ data }) {
+export default function Dashboard({ data, onMetricClick }) {
   const { summary, surplus, yearOverYear, tax, netMonthlyIncome, assets, categories, monthlyData, runway, meta } = data;
 
   const runwayColor =
@@ -57,12 +57,12 @@ export default function Dashboard({ data }) {
     <div>
       {/* ── 1. General Overview ────────────────────────────────────────────── */}
       <Section id="overview" title="Overview">
-        <GeneralOverviewCard data={data} />
+        <GeneralOverviewCard data={data} onMetricClick={onMetricClick} />
       </Section>
 
       {/* ── 2. Monthly Overview ──────────────────────────────────────────── */}
       <Section id="monthly-overview" title="Monthly Overview">
-        <MonthlyOverviewCard data={data} />
+        <MonthlyOverviewCard data={data} onMetricClick={onMetricClick} />
       </Section>
 
       {/* ── 2. Monthly Chart ─────────────────────────────────────────────── */}
@@ -71,54 +71,59 @@ export default function Dashboard({ data }) {
       </Section>
 
       {/* ── 3. Tax & Net Income ──────────────────────────────────────────── */}
-      <Section id="tax-calculation" title="Tax Calculation">
-        <div className="two-col">
-          <TaxBreakdown tax={tax} netMonthlyIncome={netMonthlyIncome} config={tax.config} />
+      {tax.enabled && (
+        <Section id="tax-calculation" title="Tax Calculation">
+          <div className="two-col">
+            <TaxBreakdown tax={tax} netMonthlyIncome={netMonthlyIncome} onMetricClick={onMetricClick} />
 
-          {/* Year-over-year summary card */}
-          <div className="card fade-in-up">
-            <div className="card-title">Year-over-Year Comparison</div>
+            {/* Year-over-year summary card */}
+            <div className="card fade-in-up">
+              <div className="card-title">Year-over-Year Comparison</div>
 
-            <YoYBlock
-              label="Income"
-              thisYear={yearOverYear.projectedIncomeThisYear}
-              prevYear={yearOverYear.incomePreviousYear}
-              pct={yearOverYear.incomeGrowthPercent}
-              currentYear={`${yearOverYear.currentYear} Projected`}
-              previousYear={yearOverYear.previousYear}
-              positiveIsGood
-            />
+              <YoYBlock
+                label="Income"
+                thisYear={yearOverYear.projectedIncomeThisYear}
+                prevYear={yearOverYear.incomePreviousYear}
+                pct={yearOverYear.incomeGrowthPercent}
+                currentYear={`${yearOverYear.currentYear} Projected`}
+                previousYear={yearOverYear.previousYear}
+                positiveIsGood
+                onClick={() => onMetricClick && onMetricClick({ path: 'yearOverYear.projectedIncomeThisYear', label: 'Projected Income', format: 'currency' })}
+              />
 
-            <div className="tax-divider" aria-hidden="true" />
+              <div className="tax-divider" aria-hidden="true" />
 
-            <YoYBlock
-              label="Expenses"
-              thisYear={yearOverYear.projectedExpensesThisYear}
-              prevYear={yearOverYear.expensesPreviousYear}
-              pct={yearOverYear.expensesGrowthPercent}
-              currentYear={`${yearOverYear.currentYear} Projected`}
-              previousYear={yearOverYear.previousYear}
-              positiveIsGood={false}
-            />
+              <YoYBlock
+                label="Expenses"
+                thisYear={yearOverYear.projectedExpensesThisYear}
+                prevYear={yearOverYear.expensesPreviousYear}
+                pct={yearOverYear.expensesGrowthPercent}
+                currentYear={`${yearOverYear.currentYear} Projected`}
+                previousYear={yearOverYear.previousYear}
+                positiveIsGood={false}
+                onClick={() => onMetricClick && onMetricClick({ path: 'yearOverYear.projectedExpensesThisYear', label: 'Projected Expenses', format: 'currency' })}
+              />
 
-            <div className="tax-divider" aria-hidden="true" />
+              <div className="tax-divider" aria-hidden="true" />
 
-            <YoYBlock
-              label="Surplus"
-              thisYear={surplus.projectedThisYear}
-              prevYear={surplus.previousYear}
-              pct={surplus.growthPercent}
-              currentYear={`${yearOverYear.currentYear} Projected`}
-              previousYear={yearOverYear.previousYear}
-              positiveIsGood
-            />
+              <YoYBlock
+                label="Surplus"
+                thisYear={surplus.projectedThisYear}
+                prevYear={surplus.previousYear}
+                pct={surplus.growthPercent}
+                currentYear={`${yearOverYear.currentYear} Projected`}
+                previousYear={yearOverYear.previousYear}
+                positiveIsGood
+                onClick={() => onMetricClick && onMetricClick({ path: 'surplus.projectedThisYear', label: 'Projected Surplus', format: 'currency' })}
+              />
+            </div>
           </div>
-        </div>
-      </Section>
+        </Section>
+      )}
 
       {/* ── 4. Category Breakdown ────────────────────────────────────────── */}
       <Section id="category-breakdown" title="Category Breakdown">
-        <CategoryBreakdown expenses={categories.expenses} income={categories.income} />
+        <CategoryBreakdown expenses={categories.expenses} income={categories.income} onMetricClick={onMetricClick} />
       </Section>
 
       {/* ── 5. Assets ────────────────────────────────────────────────────── */}
@@ -128,21 +133,25 @@ export default function Dashboard({ data }) {
 
       {/* ── 6. Future Projections ────────────────────────────────────────── */}
       <Section id="future-projections" title="Future Projections">
-        <ProjectionCard projections={data.projections} />
+        <ProjectionCard projections={data.projections} onMetricClick={onMetricClick} />
       </Section>
     </div>
   );
 }
 
 /** Compact year-over-year comparison block for a single metric. */
-function YoYBlock({ label, thisYear, prevYear, pct, currentYear, previousYear, positiveIsGood }) {
+function YoYBlock({ label, thisYear, prevYear, pct, currentYear, previousYear, positiveIsGood, onClick }) {
   const increased = pct != null && pct > 0;
   const changeColor = pct == null ? '' :
     (positiveIsGood ? (increased ? 'text-positive' : 'text-negative') :
                       (increased ? 'text-negative' : 'text-positive'));
 
   return (
-    <div style={{ padding: 'var(--space-4) 0' }}>
+    <div 
+      className={onClick ? 'clickable' : ''}
+      onClick={onClick}
+      style={{ padding: 'var(--space-3) var(--space-4)', margin: '0 calc(var(--space-4) * -1)', borderRadius: 'var(--radius-sm)' }}
+    >
       <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 'var(--space-3)' }}>
         {label}
       </div>

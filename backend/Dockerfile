@@ -18,6 +18,7 @@ RUN apk add --no-cache \
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 COPY src/ ./src/
+RUN mkdir -p /app/data
 
 EXPOSE ${BACKEND_PORT:-3001}
 

@@ -6,7 +6,8 @@ const express = require('express');
 const cors = require('cors');
 const config = require('./config');
 const statisticsRouter = require('./routes/statistics');
-const { generateDashboardPdf } = require('./services/pdfGenerator');
+const { generateDashboardPdf, generateDashboardHtml } = require('./services/pdfGenerator');
+const { getStatistics } = require('./services/db');
 const { startScheduler } = require('./services/reportScheduler');
 
 const app = express();
@@ -47,6 +48,28 @@ app.get('/api/report/pdf', async (_req, res) => {
   } catch (err) {
     console.error('[Report] Failed to generate PDF:', err);
     res.status(500).json({ error: 'Failed to generate PDF report.' });
+  }
+});
+
+// On-demand HTML report download
+app.get('/api/report/html', async (_req, res) => {
+  try {
+    console.log('[Report] Generating on-demand HTML report…');
+    const frontendUrl = process.env.FRONTEND_INTERNAL_URL || `http://frontend:3000`;
+    const htmlBuffer = await generateDashboardHtml(frontendUrl);
+
+    const now = new Date();
+    const filename = `WheresMyMoney_Report_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}.html`;
+
+    res.set({
+      'Content-Type': 'text/html; charset=utf-8',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': htmlBuffer.length,
+    });
+    res.end(htmlBuffer);
+  } catch (err) {
+    console.error('[Report] Failed to generate HTML:', err);
+    res.status(500).json({ error: 'Failed to generate HTML report.' });
   }
 });
 

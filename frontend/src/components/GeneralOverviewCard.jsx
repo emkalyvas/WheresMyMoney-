@@ -4,7 +4,7 @@ import { eurFmt } from './StatCard';
 /**
  * General Overview displayed as a list of rows, similar to the Monthly Overview card.
  */
-export default function GeneralOverviewCard({ data }) {
+export default function GeneralOverviewCard({ data, onMetricClick }) {
   const { summary, runway, netMonthlyIncome, assets, categories, meta } = data;
 
   const getGrowth = (current, previous) => {
@@ -21,6 +21,8 @@ export default function GeneralOverviewCard({ data }) {
       growth: getGrowth(summary.meanMonthlyIncome, summary.previousMeanMonthlyIncome),
       invertGrowthColor: false,
       previousValue: summary.previousMeanMonthlyIncome,
+      path: 'summary.meanMonthlyIncome',
+      format: 'currency',
     },
     {
       label: 'Mean Monthly Expenses',
@@ -30,6 +32,8 @@ export default function GeneralOverviewCard({ data }) {
       growth: getGrowth(summary.meanMonthlyExpenses, summary.previousMeanMonthlyExpenses),
       invertGrowthColor: true,
       previousValue: summary.previousMeanMonthlyExpenses,
+      path: 'summary.meanMonthlyExpenses',
+      format: 'currency',
     },
     {
       label: 'Mean Monthly Surplus',
@@ -39,16 +43,22 @@ export default function GeneralOverviewCard({ data }) {
       growth: getGrowth(summary.meanMonthlySurplus, summary.previousMeanMonthlySurplus),
       invertGrowthColor: false,
       previousValue: summary.previousMeanMonthlySurplus,
+      path: 'summary.meanMonthlySurplus',
+      format: 'currency',
     },
     {
       label: 'Net Annual Projection',
       value: eurFmt.format(netMonthlyIncome.projected),
       valueClass: 'text-positive',
+      path: 'netMonthlyIncome.projected',
+      format: 'currency',
     },
     {
       label: 'Asset Runway',
       value: runway.months != null ? `${runway.months.toFixed(1)} mo` : '—',
       info: 'Months of expenses covered by assets',
+      path: 'runway.months',
+      format: 'number',
     },
     {
       label: 'Top Expense Category',
@@ -64,7 +74,11 @@ export default function GeneralOverviewCard({ data }) {
         Overview
       </div>
 
-      <div style={{ textAlign: 'center', margin: 'var(--space-4) 0' }}>
+      <div 
+        style={{ textAlign: 'center', margin: 'var(--space-4) 0', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)' }}
+        className={onMetricClick ? 'clickable' : ''}
+        onClick={() => onMetricClick && onMetricClick({ path: 'assets.netWorthEur', label: 'Total Net Worth', format: 'currency' })}
+      >
         <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
           Total Net Worth
         </div>
@@ -92,7 +106,15 @@ export default function GeneralOverviewCard({ data }) {
       <div className="tax-divider" style={{ marginBottom: 'var(--space-3)' }} aria-hidden="true" />
 
       {rows.map((r, i) => (
-        <div className="tax-row" key={r.label + i}>
+        <div 
+          className={`tax-row ${onMetricClick && r.path ? 'clickable' : ''}`} 
+          key={r.label + i}
+          onClick={() => {
+            if (onMetricClick && r.path) {
+              onMetricClick({ path: r.path, label: r.label, format: r.format });
+            }
+          }}
+        >
           <div className="tax-row-label">
             {r.label}
             {r.info && (
