@@ -6,7 +6,7 @@ const BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:${
 /**
  * Sticky top header with brand logo, last-updated timestamp, refresh and download buttons.
  */
-export default function Header({ lastUpdated, onRefresh, loading, onToggleSidebar }) {
+export default function Header({ lastUpdated, onRefresh, loading, onToggleSidebar, isSidebarOpen }) {
   const formatted = lastUpdated
     ? new Date(lastUpdated).toLocaleString(undefined, {
         dateStyle: 'medium',
@@ -39,13 +39,15 @@ export default function Header({ lastUpdated, onRefresh, loading, onToggleSideba
           {loading ? 'Loading…' : 'Refresh'}
         </button>
 
-        <button
-          className="header-refresh-btn hamburger-btn"
-          onClick={onToggleSidebar}
-          aria-label="Toggle navigation menu"
-        >
-          <Menu size={18} />
-        </button>
+        {!isSidebarOpen && (
+          <button
+            className="header-refresh-btn hamburger-btn"
+            onClick={onToggleSidebar}
+            aria-label="Toggle navigation menu"
+          >
+            <Menu size={18} />
+          </button>
+        )}
       </div>
     </header>
   );

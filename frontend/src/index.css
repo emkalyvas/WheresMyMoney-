@@ -116,6 +116,7 @@ body {
   display: flex;
   flex: 1;
   width: 100%;
+  margin-top: 73px; /* offset fixed header */
 }
 
 .main-content {
@@ -129,14 +130,17 @@ body {
 
 /* ── 4. Header ────────────────────────────────────────────────────────────── */
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  height: 73px;
   z-index: 100;
   background: rgba(7, 12, 26, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--clr-glass-border);
-  padding: var(--space-4) var(--space-8);
+  padding: 0 var(--space-8);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -205,6 +209,40 @@ body {
   display: none;
 }
 
+.sidebar-expand-tab {
+  position: fixed;
+  top: 88px; /* just below the fixed header (73px + 15px) */
+  left: 0;
+  z-index: 95;
+  width: 32px;
+  height: 48px;
+  background: rgba(13, 22, 41, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--clr-glass-border);
+  border-left: none; /* flat against the screen edge */
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--clr-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.3);
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.sidebar-expand-tab:hover {
+  background: var(--clr-bg-elevated);
+  color: var(--clr-accent-blue);
+  transform: translateX(2px);
+  box-shadow: 4px 4px 20px rgba(59, 130, 246, 0.2);
+}
+
+@media (max-width: 1024px) {
+  .sidebar-expand-tab {
+    display: none;
+  }
+}
+
 /* ── 4.1 Sidebar ──────────────────────────────────────────────────────────── */
 .sidebar {
   width: 250px;
@@ -213,11 +251,40 @@ body {
   border-right: 1px solid var(--clr-glass-border);
   display: flex;
   flex-direction: column;
-  position: sticky;
+  position: fixed;
   top: 73px; /* approximate header height */
+  left: 0;
   height: calc(100vh - 73px);
   overflow-y: auto;
   flex-shrink: 0;
+  transition: width var(--transition-slow), opacity var(--transition-slow), transform var(--transition-slow), border-color var(--transition-slow);
+  z-index: 90;
+}
+
+.sidebar.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+  border-right: 0px solid transparent;
+  overflow: hidden;
+  transform: translateX(-250px);
+}
+
+.sidebar-spacer {
+  width: 250px;
+  flex-shrink: 0;
+  transition: width var(--transition-slow);
+}
+
+.sidebar-spacer.collapsed {
+  width: 0 !important;
+}
+
+@media (max-width: 1024px) {
+  .sidebar-spacer {
+    display: none;
+  }
 }
 
 .sidebar-header {
@@ -235,11 +302,21 @@ body {
 }
 
 .sidebar-close-btn {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
   color: var(--clr-text-secondary);
   cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.sidebar-close-btn:hover {
+  color: var(--clr-accent-blue);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .sidebar-nav {
@@ -743,7 +820,7 @@ body {
     margin-bottom: var(--space-4);
   }
   
-  .sidebar-close-btn { display: block; }
+  .sidebar-close-btn { display: flex; }
   
   .sidebar-overlay {
     display: block;
@@ -935,12 +1012,18 @@ body {
   /* Hide interactive shell elements */
   .header,
   .sidebar,
+  .sidebar-spacer,
+  .sidebar-expand-tab,
   .sidebar-overlay,
   #btn-refresh,
   #btn-download,
   .header-refresh-btn,
   .retry-btn {
     display: none !important;
+  }
+
+  .layout-container {
+    margin-top: 0 !important;
   }
 
   /* Remove animated background — too heavy for PDF rendering */
@@ -955,22 +1038,66 @@ body {
     background: #070c1a;
   }
 
-  /* Remove page margins from the browser chrome */
+  /* Remove page margins from the browser chrome and set named templates */
   @page {
     margin: 0;
     background: #070c1a;
   }
 
-  /* Ensure cards don't get clipped across page breaks */
-  .card {
-    break-inside: avoid;
-    page-break-inside: avoid;
+  @page overview-page {
+    size: 1600px 2200px;
+    margin: 40px;
   }
 
-  /* Prevent section headers breaking from their content */
-  .section-header {
-    break-after: avoid;
-    page-break-after: avoid;
+  @page tax-page {
+    size: 1600px 1100px;
+    margin: 40px;
+  }
+
+  @page categories-page {
+    size: 1600px 2800px;
+    margin: 40px;
+  }
+
+  @page assets-page {
+    size: 1600px 2800px;
+    margin: 40px;
+  }
+
+  @page projections-page {
+    size: 1600px 1100px;
+    margin: 40px;
+  }
+
+  /* Assign sections to named pages */
+  #overview,
+  #monthly-overview,
+  #monthly-trend {
+    page: overview-page;
+  }
+
+  #tax-calculation {
+    page: tax-page;
+    page-break-before: always;
+    break-before: page;
+  }
+
+  #category-breakdown {
+    page: categories-page;
+    page-break-before: always;
+    break-before: page;
+  }
+
+  #assets-liabilities {
+    page: assets-page;
+    page-break-before: always;
+    break-before: page;
+  }
+
+  #future-projections {
+    page: projections-page;
+    page-break-before: always;
+    break-before: page;
   }
 
   /* Remove animations for print */
