@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { RefreshCw, FileDown, Menu } from 'lucide-react';
+import { RefreshCw, FileDown, Menu, LogOut } from 'lucide-react';
 
 const BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_BACKEND_PORT || 3001}`;
 
 /**
  * Sticky top header with brand logo, last-updated timestamp, refresh and download buttons.
  */
-export default function Header({ lastUpdated, onRefresh, loading, onToggleSidebar, isSidebarOpen }) {
+export default function Header({ lastUpdated, onRefresh, loading, onToggleSidebar, isSidebarOpen, onLogout }) {
   const formatted = lastUpdated
     ? new Date(lastUpdated).toLocaleString(undefined, {
         dateStyle: 'medium',
@@ -38,6 +38,18 @@ export default function Header({ lastUpdated, onRefresh, loading, onToggleSideba
           <RefreshCw size={14} className={loading ? 'spinning' : ''} />
           {loading ? 'Loading…' : 'Refresh'}
         </button>
+
+        {onLogout && (
+          <button
+            className="header-refresh-btn logout-btn"
+            onClick={onLogout}
+            aria-label="Log out"
+            style={{ gap: 'var(--space-2)' }}
+          >
+            <LogOut size={14} />
+            Logout
+          </button>
+        )}
 
         {!isSidebarOpen && (
           <button

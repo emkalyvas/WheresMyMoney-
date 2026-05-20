@@ -6,6 +6,40 @@ const client = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// Automatically inject Authorization header if a token exists in localStorage
+client.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('wmm_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+/**
+ * Checks if the backend requires password protection.
+ * @returns {Promise<boolean>} True if protection is enabled
+ */
+export async function checkAuthStatus() {
+  const response = await client.get('/auth/status');
+  return response.data.required;
+}
+
+/**
+ * Attempts to log in with the provided password.
+ * @param {string} password 
+ * @returns {Promise<{success: boolean, token: string}>}
+ */
+export async function login(password) {
+  const response = await client.post('/auth/login', { password });
+  if (response.data.success && response.data.token) {
+    localStorage.setItem('wmm_token', response.data.token);
+  }
+  return response.data;
+}
+
 /**
  * Fetches the full statistics payload from the backend.
  * @returns {Promise<object>} The statistics data object

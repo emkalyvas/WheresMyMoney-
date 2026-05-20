@@ -3,7 +3,8 @@ import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
 import HistoryModal from './components/HistoryModal';
-import { fetchStatistics } from './api/client';
+import Login from './components/Login';
+import { fetchStatistics, checkAuthStatus } from './api/client';
 import { ChevronRight } from 'lucide-react';
 
 export default function App() {
@@ -14,6 +15,11 @@ export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [selectedMetricHistory, setSelectedMetricHistory] = useState(null);
+
+  // Authentication states
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthRequired, setIsAuthRequired] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
 
   const handleToggleSidebar = () => {
     if (window.innerWidth <= 1024) {
@@ -26,7 +32,12 @@ export default function App() {
   const handleDownload = async (format = 'pdf') => {
     setDownloading(true);
     try {
-      const response = await fetch(`/api/report/${format}`);
+      const token = localStorage.getItem('wmm_token');
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`/api/report/${format}`, { headers });
       if (!response.ok) throw new Error(`Failed to generate ${format.toUpperCase()}`);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -51,18 +62,75 @@ export default function App() {
     try {
       const stats = await fetchStatistics();
       setData(stats);
+      setIsAuthenticated(true);
     } catch (err) {
       console.error('Failed to load statistics:', err);
-      setError(err.response?.data?.error ?? err.message ?? 'Unknown error');
+      if (err.response?.status === 401) {
+        setIsAuthenticated(false);
+      } else {
+        setError(err.response?.data?.error ?? err.message ?? 'Unknown error');
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Load once on mount
+  const handleLogout = () => {
+    localStorage.removeItem('wmm_token');
+    setIsAuthenticated(false);
+    setData(null);
+  };
+
+  // Check URL token & backend auth requirements on mount
   useEffect(() => {
-    load();
+    const initializeAuth = async () => {
+      // 1. Check for token in URL parameter (for Puppeteer / PDF rendering bypass)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get('token');
+      if (urlToken) {
+        localStorage.setItem('wmm_token', urlToken);
+        // Clear token from URL to keep address bar clean
+        urlParams.delete('token');
+        const cleanSearch = urlParams.toString();
+        const cleanUrl = window.location.pathname + (cleanSearch ? `?${cleanSearch}` : '');
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+
+      // 2. Fetch auth requirement status from backend
+      try {
+        const isRequired = await checkAuthStatus();
+        setIsAuthRequired(isRequired);
+        if (isRequired) {
+          const storedToken = localStorage.getItem('wmm_token');
+          if (!storedToken) {
+            setIsAuthenticated(false);
+          } else {
+            await load();
+          }
+        } else {
+          // Password protection disabled: load statistics straight away
+          setIsAuthenticated(true);
+          await load();
+        }
+      } catch (err) {
+        console.error('Auth initialization failed:', err);
+        // Attempt basic fetch if status call fails
+        await load();
+      } finally {
+        setAuthChecking(false);
+      }
+    };
+
+    initializeAuth();
   }, [load]);
+
+  if (authChecking) {
+    return <LoadingState />;
+  }
+
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={() => { setIsAuthenticated(true); load(); }} />;
+  }
 
   return (
     <div className="app">
@@ -72,6 +140,7 @@ export default function App() {
         loading={loading}
         onToggleSidebar={handleToggleSidebar}
         isSidebarOpen={isSidebarOpen}
+        onLogout={isAuthRequired ? handleLogout : null}
       />
 
       {isSidebarCollapsed && (
