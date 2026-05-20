@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, FileDown, ChevronUp } from 'lucide-react';
 
-export default function Sidebar({ isOpen, onClose, onDownload, downloading }) {
+export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCollapsed, onToggleCollapse }) {
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -45,10 +45,20 @@ export default function Sidebar({ isOpen, onClose, onDownload, downloading }) {
         onClick={onClose} 
         aria-hidden="true" 
       />
-      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <aside className={`sidebar ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
           <h2>Navigation</h2>
-          <button className="sidebar-close-btn" onClick={onClose} aria-label="Close menu">
+          <button 
+            className="sidebar-close-btn" 
+            onClick={() => {
+              if (window.innerWidth <= 1024) {
+                onClose();
+              } else {
+                onToggleCollapse();
+              }
+            }} 
+            aria-label={window.innerWidth <= 1024 ? "Close menu" : "Collapse sidebar"}
+          >
             <X size={20} />
           </button>
         </div>

@@ -34,15 +34,21 @@ async function generateDashboardPdf(frontendUrl) {
     const { browser, page } = await setupPage(frontendUrl);
     browserInstance = browser;
 
-    const bodyHandle = await page.$('body');
-    const boundingBox = await bodyHandle.boundingBox();
-    const fullHeight = Math.ceil(boundingBox.height) + 100;
-    await bodyHandle.dispose();
+    // Expand category lists to show all categories in the PDF
+    await page.evaluate(async () => {
+      document.querySelectorAll('button').forEach(btn => {
+        if (btn.textContent.includes('Show') && btn.textContent.includes('More')) {
+          btn.click();
+        }
+      });
+      // Wait a tiny moment for React to render the extra items
+      await new Promise(r => setTimeout(r, 300));
+    });
 
     const pdfBuffer = await page.pdf({
-      width: 1600,
-      height: fullHeight,
       printBackground: true,
+      preferCSSPageSize: true, // Use the unique CSS @page dimensions
+      outline: true,           // Add PDF bookmarks
       margin: { top: '0', bottom: '0', left: '0', right: '0' },
     });
 

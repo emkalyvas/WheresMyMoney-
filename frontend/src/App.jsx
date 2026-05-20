@@ -4,14 +4,24 @@ import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
 import HistoryModal from './components/HistoryModal';
 import { fetchStatistics } from './api/client';
+import { ChevronRight } from 'lucide-react';
 
 export default function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [selectedMetricHistory, setSelectedMetricHistory] = useState(null);
+
+  const handleToggleSidebar = () => {
+    if (window.innerWidth <= 1024) {
+      setIsSidebarOpen(!isSidebarOpen);
+    } else {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+    }
+  };
 
   const handleDownload = async (format = 'pdf') => {
     setDownloading(true);
@@ -60,8 +70,19 @@ export default function App() {
         lastUpdated={data?.meta?.lastUpdated}
         onRefresh={load}
         loading={loading}
-        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        onToggleSidebar={handleToggleSidebar}
+        isSidebarOpen={isSidebarOpen}
       />
+
+      {isSidebarCollapsed && (
+        <button
+          className="sidebar-expand-tab"
+          onClick={() => setIsSidebarCollapsed(false)}
+          aria-label="Expand sidebar"
+        >
+          <ChevronRight size={18} />
+        </button>
+      )}
 
       <div className="layout-container">
         <Sidebar 
@@ -69,8 +90,11 @@ export default function App() {
           onClose={() => setIsSidebarOpen(false)} 
           onDownload={handleDownload}
           downloading={downloading}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
-        <main className="main-content" id="main">
+        <div className={`sidebar-spacer ${isSidebarCollapsed ? 'collapsed' : ''}`} />
+        <main className={`main-content ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`} id="main">
           {loading && !data && <LoadingState />}
           {error && !data && <ErrorState error={error} onRetry={load} />}
           {data && <Dashboard data={data} onMetricClick={setSelectedMetricHistory} />}
