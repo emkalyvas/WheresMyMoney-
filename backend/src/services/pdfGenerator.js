@@ -1,7 +1,18 @@
 'use strict';
 
 const puppeteer = require('puppeteer');
+const { API_TOKEN } = require('./authToken');
+const config = require('../config');
+
 async function setupPage(frontendUrl) {
+  // Append auth token if application password protection is enabled
+  let targetUrl = frontendUrl;
+  if (config.appPassword) {
+    const parsedUrl = new URL(frontendUrl);
+    parsedUrl.searchParams.set('token', API_TOKEN);
+    targetUrl = parsedUrl.toString();
+  }
+
   const browser = await puppeteer.launch({
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
     headless: true,
@@ -18,7 +29,7 @@ async function setupPage(frontendUrl) {
 
   const page = await browser.newPage();
   await page.setViewport({ width: 1600, height: 900 });
-  await page.goto(frontendUrl, { waitUntil: 'networkidle0', timeout: 60000 });
+  await page.goto(targetUrl, { waitUntil: 'networkidle0', timeout: 60000 });
   await page.waitForSelector('#main .card', { timeout: 30000 });
   await new Promise((resolve) => setTimeout(resolve, 1500));
 

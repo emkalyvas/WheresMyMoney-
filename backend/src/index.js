@@ -25,6 +25,55 @@ app.use((req, _res, next) => {
 });
 
 // ---------------------------------------------------------------------------
+// Authentication Endpoints & Middleware
+// ---------------------------------------------------------------------------
+const { API_TOKEN } = require('./services/authToken');
+
+// Auth status check
+app.get('/api/auth/status', (_req, res) => {
+  res.json({ required: !!config.appPassword });
+});
+
+// Login endpoint
+app.post('/api/auth/login', (req, res) => {
+  const { password } = req.body;
+  if (!config.appPassword) {
+    return res.json({ success: true, token: '' });
+  }
+
+  if (password === config.appPassword) {
+    return res.json({ success: true, token: API_TOKEN });
+  }
+
+  res.status(401).json({ error: 'Invalid password' });
+});
+
+// Global API Route Protection Middleware
+app.use((req, res, next) => {
+  // If no app password is set, authentication is bypassed
+  if (!config.appPassword) {
+    return next();
+  }
+
+  // Exempt auth routes and health-check
+  if (
+    req.path === '/api/auth/status' ||
+    req.path === '/api/auth/login' ||
+    req.path === '/health'
+  ) {
+    return next();
+  }
+
+  // Verify dynamic API token
+  const authHeader = req.headers.authorization;
+  if (!authHeader || authHeader !== `Bearer ${API_TOKEN}`) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  next();
+});
+
+// ---------------------------------------------------------------------------
 // Routes
 // ---------------------------------------------------------------------------
 app.use('/api/statistics', statisticsRouter);

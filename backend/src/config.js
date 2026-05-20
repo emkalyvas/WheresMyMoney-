@@ -8,6 +8,7 @@ require('dotenv').config();
  */
 module.exports = {
   port: parseInt(process.env.BACKEND_PORT || '3001', 10),
+  appPassword: process.env.APP_PASSWORD || '',
 
   firefly: {
     apiUrl: (process.env.FIREFLY_API_URL || 'http://localhost:8080').replace(/\/$/, ''),
