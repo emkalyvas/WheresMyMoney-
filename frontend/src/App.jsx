@@ -161,6 +161,7 @@ export default function App() {
           downloading={downloading}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onLogout={isAuthRequired ? handleLogout : null}
         />
         <div className={`sidebar-spacer ${isSidebarCollapsed ? 'collapsed' : ''}`} />
         <main className={`main-content ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`} id="main">
