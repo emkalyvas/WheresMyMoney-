@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
-import { Target, Clock, TrendingUp } from 'lucide-react';
+import { Target, Clock, TrendingUp, Activity } from 'lucide-react';
 import { eurFmt } from './StatCard';
 
 /** Custom tooltip for the projection chart */
@@ -68,6 +68,34 @@ function MilestoneBadge({ icon: Icon, label, value, yearFull, yearConfig, config
   );
 }
 
+/** Safe Withdrawal Badge Component */
+function SafeWithdrawalBadge({ annualAmount, monthlyAmount, safeRate, onMetricClick }) {
+  return (
+    <div className="stat-card fade-in-up" style={{ padding: 'var(--space-4)' }}>
+      <div className="stat-card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+        <div className="stat-icon" style={{ color: 'var(--clr-text-secondary)' }}><Activity size={18} /></div>
+        <div className="stat-label" style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--clr-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Safe Withdrawal (At {safeRate}%)</div>
+      </div>
+      <div 
+        className={onMetricClick ? 'clickable' : ''}
+        onClick={() => onMetricClick && onMetricClick({ path: 'projections.safeMonthlyWithdrawal', label: 'Safe Monthly Withdrawal', format: 'currency' })}
+        style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '16px', color: 'var(--clr-positive)' }}
+      >
+        {eurFmt.format(monthlyAmount)} <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--clr-text-muted)' }}>/ mo</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+        <div 
+          className={`badge ${onMetricClick ? 'clickable' : ''}`}
+          onClick={() => onMetricClick && onMetricClick({ path: 'projections.safeAnnualWithdrawal', label: 'Safe Annual Withdrawal', format: 'currency' })}
+          style={{ backgroundColor: 'rgba(2, 164, 227, 0.15)', color: '#02a4e3', padding: '4px 10px', fontSize: '0.8rem' }}
+        >
+          Annual: {eurFmt.format(annualAmount)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Future Projections line chart.
  * Shows projected assets over a configured horizon based on two scenarios.
@@ -77,7 +105,9 @@ export default function ProjectionCard({ projections, onMetricClick }) {
     return null;
   }
 
-  const { data, targetGoal, retirementTarget, milestones, investmentGrowthRate, monthlyInvestmentAmount } = projections;
+  const { data, targetGoal, retirementTarget, safeAnnualWithdrawal, safeMonthlyWithdrawal, milestones, investmentGrowthRate, monthlyInvestmentAmount } = projections;
+  // Fallback safe rate for display if needed
+  const safeRate = 4; // usually 4%
 
   // Format Y-axis to compact currency
   const yAxisFormatter = (v) =>
@@ -96,6 +126,8 @@ export default function ProjectionCard({ projections, onMetricClick }) {
       </div>
 
       <div className="stats-grid" style={{ marginBottom: 'var(--space-6)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
+        
+        <SafeWithdrawalBadge annualAmount={safeAnnualWithdrawal} monthlyAmount={safeMonthlyWithdrawal} safeRate={safeRate} onMetricClick={onMetricClick} />
 
         <MilestoneBadge
           icon={TrendingUp}

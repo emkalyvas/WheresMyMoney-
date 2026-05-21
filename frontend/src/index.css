@@ -1089,7 +1089,8 @@ body {
     break-before: page;
   }
 
-  #category-breakdown {
+  #category-breakdown,
+  #category-breakdown-90d {
     page: categories-page;
     page-break-before: always;
     break-before: page;

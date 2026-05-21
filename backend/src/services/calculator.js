@@ -127,6 +127,29 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   const previousMeanMonthlySurplus = previousMeanMonthlyIncome - previousMeanMonthlyExpenses;
 
   // -------------------------------------------------------------------------
+  // 2b. Rolling Averages (90-day and 180-day up to the last complete day)
+  // -------------------------------------------------------------------------
+  const lastCompleteDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+  
+  const days90Ago = new Date(lastCompleteDay);
+  days90Ago.setDate(days90Ago.getDate() - 90);
+  
+  const days180Ago = new Date(lastCompleteDay);
+  days180Ago.setDate(days180Ago.getDate() - 180);
+
+  const expenses90d = expenses.filter(j => j.date > days90Ago && j.date <= lastCompleteDay);
+  const income90d = income.filter(j => j.date > days90Ago && j.date <= lastCompleteDay);
+  const expenses180d = expenses.filter(j => j.date > days180Ago && j.date <= lastCompleteDay);
+  const income180d = income.filter(j => j.date > days180Ago && j.date <= lastCompleteDay);
+
+  const daysInMonth = 365 / 12;
+  const rolling90DayExpenses = (sumAmounts(expenses90d) / 90) * daysInMonth;
+  const rolling90DayIncome = (sumAmounts(income90d) / 90) * daysInMonth;
+  const rolling90DaySurplus = rolling90DayIncome - rolling90DayExpenses;
+  const rolling180DayExpenses = (sumAmounts(expenses180d) / 180) * daysInMonth;
+  const rolling180DayIncome = (sumAmounts(income180d) / 180) * daysInMonth;
+
+  // -------------------------------------------------------------------------
   // 3. Current-year & previous-year stats
   // -------------------------------------------------------------------------
   const thisYearExpenses = expenses.filter((j) => j.date.getFullYear() === currentYear);
@@ -298,6 +321,35 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
 
   const topExpenseCategory = categoryExpenses[0] ?? null;
 
+  const expenses90dByCategory = groupBy(expenses90d, (j) => j.category);
+  const income90dByCategory = groupBy(income90d, (j) => j.category);
+
+  const categoryExpenses90d = Object.entries(expenses90dByCategory)
+    .map(([name, txs]) => {
+      const total = sumAmounts(txs);
+      return {
+        name,
+        total,
+        monthlyMean: (total / 90) * daysInMonth,
+        transactionCount: txs.length,
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+
+  const categoryIncome90d = Object.entries(income90dByCategory)
+    .map(([name, txs]) => {
+      const total = sumAmounts(txs);
+      return {
+        name,
+        total,
+        monthlyMean: (total / 90) * daysInMonth,
+        transactionCount: txs.length,
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+
+  const topExpenseCategory90d = categoryExpenses90d[0] ?? null;
+
   // -------------------------------------------------------------------------
   // 8. Assets (all accounts, EUR-converted)
   // -------------------------------------------------------------------------
@@ -332,19 +384,29 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   const totalLiabilitiesEur = liabilityList.reduce((s, a) => s + Math.abs(a.balanceEur), 0);
   const netWorthEur = totalAssetsEur - totalLiabilitiesEur;
 
-  // Runway: how many months of mean spending can we sustain from assets
-  const runwayMonths =
-    meanMonthlyExpenses > 0 ? totalAssetsEur / meanMonthlyExpenses : null;
+  // Inject allocation percentage
+  assetList.forEach(a => {
+    a.allocationPct = totalAssetsEur > 0 ? (a.balanceEur / totalAssetsEur) * 100 : 0;
+  });
+
+  const projCfg = config.projections;
+  const currentTotalInvested = assetList.filter(a => a.currency === 'BTC' || a.currency === 'ADA' || (a.id.startsWith('t212_') && a.id !== 't212_cash')).reduce((s, a) => s + a.balanceEur, 0);
+  const currentCash = totalAssetsEur - currentTotalInvested;
+
+  // Runway: how many months of spending can we sustain from assets (using 90-day rolling avg)
+  const runwayBasisExpenses = rolling90DayExpenses > 0 ? rolling90DayExpenses : meanMonthlyExpenses;
+  const runwayMonths = runwayBasisExpenses > 0 ? totalAssetsEur / runwayBasisExpenses : null;
+  const liquidRunwayMonths = runwayBasisExpenses > 0 ? currentCash / runwayBasisExpenses : null;
 
   // -------------------------------------------------------------------------
   // 9. Future Projections
   // -------------------------------------------------------------------------
-  const projCfg = config.projections;
-  const currentTotalInvested = assetList.filter(a => a.currency === 'BTC' || a.currency === 'ADA' || (a.id.startsWith('t212_') && a.id !== 't212_cash')).reduce((s, a) => s + a.balanceEur, 0);
-  const currentCash = totalAssetsEur - currentTotalInvested;
   
-  const annualExpenses = meanMonthlyExpenses * 12;
+  const annualExpenses = runwayBasisExpenses * 12;
   const retirementTarget = annualExpenses > 0 ? annualExpenses / projCfg.safeWithdrawalRate : null;
+  const safeAnnualWithdrawal = currentTotalInvested * projCfg.safeWithdrawalRate;
+  const safeMonthlyWithdrawal = safeAnnualWithdrawal / 12;
+  
   const targetAssetGoal = projCfg.targetAssetGoal;
   const investmentGrowthRate = projCfg.investmentGrowthRate;
   
@@ -406,6 +468,11 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
       previousMeanMonthlySurplus,
       savingsRate,
       totalMonths,
+      rolling90DayExpenses,
+      rolling90DayIncome,
+      rolling90DaySurplus,
+      rolling180DayExpenses,
+      rolling180DayIncome,
     },
     surplus: {
       thisYear: thisYearSurplus,
@@ -461,17 +528,24 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
       expenses: categoryExpenses,
       income: categoryIncome,
       topExpense: topExpenseCategory,
+      expenses90d: categoryExpenses90d,
+      income90d: categoryIncome90d,
+      topExpense90d: topExpenseCategory90d,
     },
     monthlyData,
     runway: {
       months: runwayMonths,
+      liquidMonths: liquidRunwayMonths,
       totalAssetsEur,
-      meanMonthlyExpenses,
+      totalCashEur: currentCash,
+      basisExpenses: runwayBasisExpenses,
     },
     projections: {
       data: projectionData,
       targetGoal: targetAssetGoal,
       retirementTarget: retirementTarget,
+      safeAnnualWithdrawal,
+      safeMonthlyWithdrawal,
       investmentGrowthRate: investmentGrowthRate,
       monthlyInvestmentAmount: projCfg.monthlyInvestmentAmount,
       milestones: {

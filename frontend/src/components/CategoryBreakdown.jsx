@@ -21,7 +21,7 @@ const INCOME_COLORS = [
  *  - expenses: array of { name, monthlyMean, total, transactionCount }
  *  - income:   same shape
  */
-export default function CategoryBreakdown({ expenses, income, onMetricClick }) {
+export default function CategoryBreakdown({ expenses, income, onMetricClick, expensePathKey = "expenses", incomePathKey = "income" }) {
   return (
     <div className="two-col">
       <CategoryList
@@ -31,7 +31,7 @@ export default function CategoryBreakdown({ expenses, income, onMetricClick }) {
         colors={EXPENSE_COLORS}
         invertGrowthColor={true}
         onMetricClick={onMetricClick}
-        type="expenses"
+        type={expensePathKey}
       />
       <CategoryList
         title="Income by Category"
@@ -40,7 +40,7 @@ export default function CategoryBreakdown({ expenses, income, onMetricClick }) {
         colors={INCOME_COLORS}
         invertGrowthColor={false}
         onMetricClick={onMetricClick}
-        type="income"
+        type={incomePathKey}
       />
     </div>
   );
@@ -76,15 +76,6 @@ function CategoryList({ title, id, items, colors, invertGrowthColor, onMetricCli
 
       {displayedItems.map((item, i) => {
         const growth = getGrowth(item.monthlyMean, item.previousMonthlyMean);
-        
-        let rankIndicator = null;
-        if (item.rankChange != null) {
-          if (item.rankChange > 0) rankIndicator = <span style={{ color: 'var(--clr-positive)', marginLeft: 4 }}>▲{item.rankChange}</span>;
-          else if (item.rankChange < 0) rankIndicator = <span style={{ color: 'var(--clr-negative)', marginLeft: 4 }}>▼{Math.abs(item.rankChange)}</span>;
-          else rankIndicator = <span style={{ color: 'var(--clr-text-muted)', marginLeft: 4 }}>=</span>;
-        } else if (item.monthlyMean > 0 && !item.previousMonthlyMean) {
-          rankIndicator = <span style={{ color: 'var(--clr-positive)', marginLeft: 4 }}>NEW</span>;
-        }
 
         return (
           <div 
@@ -97,7 +88,6 @@ function CategoryList({ title, id, items, colors, invertGrowthColor, onMetricCli
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
               <span className="category-name" title={item.name}>{item.name}</span>
-              <span style={{ fontSize: '10px', flexShrink: 0 }}>{rankIndicator}</span>
             </div>
 
             <div className="category-bar-track" aria-hidden="true">

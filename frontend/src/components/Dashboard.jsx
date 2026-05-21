@@ -122,8 +122,19 @@ export default function Dashboard({ data, onMetricClick }) {
       )}
 
       {/* ── 4. Category Breakdown ────────────────────────────────────────── */}
-      <Section id="category-breakdown" title="Category Breakdown">
+      <Section id="category-breakdown" title="Category Breakdown (All-Time)">
         <CategoryBreakdown expenses={categories.expenses} income={categories.income} onMetricClick={onMetricClick} />
+      </Section>
+
+      {/* ── 4b. Category Breakdown (90-Day) ────────────────────────────── */}
+      <Section id="category-breakdown-90d" title="Category Breakdown (90-Day)">
+        <CategoryBreakdown 
+          expenses={categories.expenses90d} 
+          income={categories.income90d} 
+          onMetricClick={onMetricClick} 
+          expensePathKey="expenses90d" 
+          incomePathKey="income90d" 
+        />
       </Section>
 
       {/* ── 5. Assets ────────────────────────────────────────────────────── */}
