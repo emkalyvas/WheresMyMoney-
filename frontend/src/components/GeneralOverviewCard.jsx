@@ -12,7 +12,7 @@ export default function GeneralOverviewCard({ data, onMetricClick }) {
     return ((current - previous) / Math.abs(previous)) * 100;
   };
 
-  const rows = [
+  const allTimeRows = [
     {
       label: 'Mean Monthly Income',
       value: eurFmt.format(summary.meanMonthlyIncome),
@@ -47,25 +47,103 @@ export default function GeneralOverviewCard({ data, onMetricClick }) {
       format: 'currency',
     },
     {
-      label: 'Net Annual Projection',
-      value: eurFmt.format(netMonthlyIncome.projected),
-      valueClass: 'text-positive',
-      path: 'netMonthlyIncome.projected',
-      format: 'currency',
-    },
-    {
-      label: 'Asset Runway',
-      value: runway.months != null ? `${runway.months.toFixed(1)} mo` : '—',
-      info: 'Months of expenses covered by assets',
-      path: 'runway.months',
-      format: 'number',
-    },
-    {
       label: 'Top Expense Category',
       value: categories.topExpense?.name ?? '—',
       info: categories.topExpense ? `${eurFmt.format(categories.topExpense.monthlyMean)}/mo avg` : '',
     },
   ];
+
+  const ninetyDayRows = [
+    {
+      label: '90-Day Avg Income',
+      value: eurFmt.format(summary.rolling90DayIncome),
+      valueClass: 'text-positive',
+      info: 'Last 90 days',
+      path: 'summary.rolling90DayIncome',
+      format: 'currency',
+    },
+    {
+      label: '90-Day Avg Expenses',
+      value: eurFmt.format(summary.rolling90DayExpenses),
+      valueClass: 'text-negative',
+      info: 'Last 90 days',
+      path: 'summary.rolling90DayExpenses',
+      format: 'currency',
+    },
+    {
+      label: '90-Day Avg Surplus',
+      value: eurFmt.format(summary.rolling90DaySurplus),
+      valueClass: summary.rolling90DaySurplus >= 0 ? 'text-positive' : 'text-negative',
+      info: 'Last 90 days',
+      path: 'summary.rolling90DaySurplus',
+      format: 'currency',
+    },
+    {
+      label: 'Asset Runway',
+      value: runway.months != null ? `${runway.months.toFixed(1)} mo` : '—',
+      info: 'Based on 90-day avg expenses',
+      path: 'runway.months',
+      format: 'number',
+    },
+    {
+      label: 'Liquid Runway',
+      value: runway.liquidMonths != null ? `${runway.liquidMonths.toFixed(1)} mo` : '—',
+      info: 'Months covered by cash only',
+      path: 'runway.liquidMonths',
+      format: 'number',
+    },
+    {
+      label: 'Top Expense Category',
+      value: categories.topExpense90d?.name ?? '—',
+      info: categories.topExpense90d ? `${eurFmt.format(categories.topExpense90d.monthlyMean)}/mo avg` : '',
+    },
+  ];
+
+  const renderRow = (r, i) => (
+    <div 
+      className={`tax-row ${onMetricClick && r.path ? 'clickable' : ''}`} 
+      key={r.label + i}
+      onClick={() => {
+        if (onMetricClick && r.path) {
+          onMetricClick({ path: r.path, label: r.label, format: r.format });
+        }
+      }}
+    >
+      <div className="tax-row-label">
+        {r.label}
+        {r.info && (
+          <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', marginLeft: '8px' }}>
+            ({r.info})
+          </span>
+        )}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+        {r.growth != null && (
+          <span
+            className={`badge ${r.growth > 0
+              ? (r.invertGrowthColor ? 'badge-negative' : 'badge-positive')
+              : r.growth < 0
+                ? (r.invertGrowthColor ? 'badge-positive' : 'badge-negative')
+                : ''
+              }`}
+            style={{ fontSize: '11px', padding: '4px 6px' }}
+          >
+            {r.growth > 0 ? '▲' : r.growth < 0 ? '▼' : '−'} {Math.abs(r.growth).toFixed(1)}%
+          </span>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+          <span className={`tax-row-value ${r.valueClass ?? ''}`} style={{ lineHeight: 1.2 }}>
+            {r.value}
+          </span>
+          {r.growth != null && (
+            <span style={{ fontSize: '10px', color: 'var(--clr-text-muted)', marginTop: '2px' }}>
+              Prev: {eurFmt.format(r.previousValue)}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="card fade-in-up">
@@ -104,52 +182,20 @@ export default function GeneralOverviewCard({ data, onMetricClick }) {
       </div>
 
       <div className="tax-divider" style={{ marginBottom: 'var(--space-3)' }} aria-hidden="true" />
+      
+      <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--clr-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+        All-Time
+      </div>
 
-      {rows.map((r, i) => (
-        <div 
-          className={`tax-row ${onMetricClick && r.path ? 'clickable' : ''}`} 
-          key={r.label + i}
-          onClick={() => {
-            if (onMetricClick && r.path) {
-              onMetricClick({ path: r.path, label: r.label, format: r.format });
-            }
-          }}
-        >
-          <div className="tax-row-label">
-            {r.label}
-            {r.info && (
-              <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', marginLeft: '8px' }}>
-                ({r.info})
-              </span>
-            )}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
-            {r.growth != null && (
-              <span
-                className={`badge ${r.growth > 0
-                  ? (r.invertGrowthColor ? 'badge-negative' : 'badge-positive')
-                  : r.growth < 0
-                    ? (r.invertGrowthColor ? 'badge-positive' : 'badge-negative')
-                    : ''
-                  }`}
-                style={{ fontSize: '11px', padding: '4px 6px' }}
-              >
-                {r.growth > 0 ? '▲' : r.growth < 0 ? '▼' : '−'} {Math.abs(r.growth).toFixed(1)}%
-              </span>
-            )}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <span className={`tax-row-value ${r.valueClass ?? ''}`} style={{ lineHeight: 1.2 }}>
-                {r.value}
-              </span>
-              {r.growth != null && (
-                <span style={{ fontSize: '10px', color: 'var(--clr-text-muted)', marginTop: '2px' }}>
-                  Prev: {eurFmt.format(r.previousValue)}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
+      {allTimeRows.map(renderRow)}
+
+      <div className="tax-divider" style={{ margin: 'var(--space-4) 0 var(--space-3) 0' }} aria-hidden="true" />
+      
+      <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--clr-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>
+        Last 90 Days
+      </div>
+
+      {ninetyDayRows.map(renderRow)}
     </div>
   );
 }

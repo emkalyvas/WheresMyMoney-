@@ -56,7 +56,7 @@ export default function AssetOverview({ assets }) {
 function AccountRow({ acc, total, isLiability = false }) {
   const showConversion = acc.currency.toUpperCase() !== 'EUR';
   const color = isLiability ? 'var(--clr-negative)' : 'var(--clr-positive)';
-  const percentage = total > 0 ? (Math.abs(acc.balanceEur) / total) * 100 : 0;
+  const percentage = acc.allocationPct ?? (total > 0 ? (Math.abs(acc.balanceEur) / total) * 100 : 0);
 
   return (
     <div className="asset-item">
