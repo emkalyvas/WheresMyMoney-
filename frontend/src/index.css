@@ -794,12 +794,19 @@ body {
   .three-col { grid-template-columns: 1fr 1fr; }
 }
 
+.sidebar-logout-btn {
+  display: none !important;
+}
+
 @media (max-width: 1024px) {
   .hamburger-btn { display: flex; }
+  .logout-btn { display: none !important; }
+  .sidebar-logout-btn { display: flex !important; }
   
   .sidebar {
     position: fixed;
     top: 0;
+    left: auto;
     right: -280px;
     width: 280px;
     height: 100vh;

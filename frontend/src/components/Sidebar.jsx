@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, FileDown, ChevronUp } from 'lucide-react';
+import { X, FileDown, ChevronUp, LogOut } from 'lucide-react';
 
-export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCollapsed, onToggleCollapse }) {
+export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCollapsed, onToggleCollapse, onLogout }) {
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -75,7 +75,7 @@ export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCo
           ))}
         </nav>
         
-        <div className="sidebar-footer" style={{ marginTop: 'auto', padding: 'var(--space-4)', position: 'relative' }} ref={menuRef}>
+        <div className="sidebar-footer" style={{ marginTop: 'auto', padding: 'var(--space-4)', position: 'relative', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }} ref={menuRef}>
           {showDownloadMenu && !downloading && (
             <div style={{
               position: 'absolute',
@@ -125,6 +125,19 @@ export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCo
             </span>
             <ChevronUp size={16} style={{ transition: 'transform 0.2s', transform: showDownloadMenu ? 'rotate(180deg)' : 'none' }} />
           </button>
+          
+          {onLogout && (
+            <button 
+              className="retry-btn sidebar-logout-btn" 
+              style={{ width: '100%', justifyContent: 'center', padding: '10px 16px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--clr-negative)', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+              onClick={onLogout}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <LogOut size={16} />
+                Logout
+              </span>
+            </button>
+          )}
         </div>
       </aside>
     </>
