@@ -165,6 +165,10 @@ export default function GeneralOverviewCard({ data, onMetricClick }) {
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 'var(--space-4)', marginTop: 'var(--space-3)', fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span style={{ fontWeight: 600 }}>Cash</span>
+            <span style={{ opacity: 0.7 }}>{eurFmt.format(runway.totalCashEur)}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <span style={{ fontWeight: 600 }}>₿ {assets.totalBtc.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</span>
             <span style={{ opacity: 0.7 }}>{eurFmt.format(assets.totalBtcEur)}</span>
           </div>
@@ -178,6 +182,12 @@ export default function GeneralOverviewCard({ data, onMetricClick }) {
               <span style={{ opacity: 0.7 }}>{eurFmt.format(stock.balanceEur)}</span>
             </div>
           ))}
+          {assets.totalLiabilitiesEur > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600 }}>Liabilities</span>
+              <span style={{ opacity: 0.7, color: 'var(--clr-negative)' }}>{eurFmt.format(-assets.totalLiabilitiesEur)}</span>
+            </div>
+          )}
         </div>
       </div>
 
