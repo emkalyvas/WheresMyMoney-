@@ -6,7 +6,7 @@ const BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:${
 /**
  * Sticky top header with brand logo, last-updated timestamp, refresh and download buttons.
  */
-export default function Header({ lastUpdated, onRefresh, loading, onToggleSidebar, isSidebarOpen, onLogout }) {
+export default function Header({ lastUpdated, onRefresh, onRecalculate, loading, onToggleSidebar, isSidebarOpen, onLogout }) {
   const formatted = lastUpdated
     ? new Date(lastUpdated).toLocaleString(undefined, {
         dateStyle: 'medium',
@@ -27,6 +27,17 @@ export default function Header({ lastUpdated, onRefresh, loading, onToggleSideba
         )}
 
 
+
+        <button
+          id="btn-recalculate"
+          className="header-refresh-btn"
+          onClick={onRecalculate}
+          disabled={loading}
+          aria-label="Recalculate all statistics"
+        >
+          <RefreshCw size={14} className={loading ? 'spinning' : ''} />
+          {loading ? 'Recalculating…' : 'Recalculate All'}
+        </button>
 
         <button
           id="btn-refresh"

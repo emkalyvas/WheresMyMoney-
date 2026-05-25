@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, FileDown, ChevronUp, LogOut } from 'lucide-react';
+import { X, FileDown, ChevronUp, LogOut, RefreshCw } from 'lucide-react';
 
-export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCollapsed, onToggleCollapse, onLogout }) {
+export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCollapsed, onToggleCollapse, onLogout, onRefresh, onRecalculate, loading }) {
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -126,6 +126,34 @@ export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCo
             <ChevronUp size={16} style={{ transition: 'transform 0.2s', transform: showDownloadMenu ? 'rotate(180deg)' : 'none' }} />
           </button>
           
+          <button 
+            className="retry-btn sidebar-mobile-btn" 
+            style={{ width: '100%', justifyContent: 'center', padding: '10px 16px', marginBottom: '8px' }}
+            disabled={loading}
+            onClick={() => {
+              if (loading) return;
+              if (onRefresh) onRefresh();
+              if (window.innerWidth <= 1024) onClose();
+            }}
+          >
+            <RefreshCw size={16} className={loading ? 'spinning' : ''} />
+            {loading ? 'Loading…' : 'Refresh'}
+          </button>
+
+          <button 
+            className="retry-btn sidebar-mobile-btn" 
+            style={{ width: '100%', justifyContent: 'center', padding: '10px 16px', marginBottom: '8px', background: 'var(--clr-accent-purple)' }}
+            disabled={loading}
+            onClick={() => {
+              if (loading) return;
+              if (onRecalculate) onRecalculate();
+              if (window.innerWidth <= 1024) onClose();
+            }}
+          >
+            <RefreshCw size={16} className={loading ? 'spinning' : ''} />
+            {loading ? 'Recalculating…' : 'Recalculate All'}
+          </button>
+
           {onLogout && (
             <button 
               className="retry-btn sidebar-logout-btn" 

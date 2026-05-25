@@ -53,6 +53,18 @@ export async function fetchStatistics() {
 }
 
 /**
+ * Force recalculates the statistics and overwrites daily history.
+ * @returns {Promise<object>} The updated statistics data object
+ */
+export async function recalculateStatistics() {
+  const response = await client.post('/statistics/recalculate');
+  if (!response.data.success) {
+    throw new Error(response.data.error ?? 'Unknown API error');
+  }
+  return response.data.data;
+}
+
+/**
  * Fetches the historical data for a specific metric.
  * @param {string} metricPath 
  * @param {string} start YYYY-MM-DD

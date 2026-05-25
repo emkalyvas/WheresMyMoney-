@@ -798,10 +798,15 @@ body {
   display: none !important;
 }
 
+.sidebar-mobile-btn {
+  display: none !important;
+}
+
 @media (max-width: 1024px) {
   .hamburger-btn { display: flex; }
   .logout-btn { display: none !important; }
   .sidebar-logout-btn { display: flex !important; }
+  .sidebar-mobile-btn { display: flex !important; }
   
   .sidebar {
     position: fixed;
@@ -847,7 +852,9 @@ body {
   }
   
   .header-meta > span, 
-  #btn-download {
+  #btn-download,
+  #btn-refresh,
+  #btn-recalculate {
     display: none;
   }
 }
