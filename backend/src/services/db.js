@@ -76,6 +76,28 @@ function saveDailySnapshot(data) {
 }
 
 /**
+ * Force save daily statistics snapshot to the database, overwriting if it exists
+ * @param {Object} data 
+ * @returns {Promise<void>}
+ */
+function forceSaveDailySnapshot(data) {
+  return new Promise((resolve, reject) => {
+    const date = new Date().toISOString().split('T')[0];
+    const payload = JSON.stringify(data);
+    const stmt = db.prepare(`
+      INSERT OR REPLACE INTO daily_statistics (date, payload) 
+      VALUES (?, ?)
+    `);
+    
+    stmt.run([date, payload], function(err) {
+      if (err) reject(err);
+      else resolve();
+    });
+    stmt.finalize();
+  });
+}
+
+/**
  * Check if the daily_statistics table has any entries
  * @returns {Promise<boolean>}
  */
@@ -210,6 +232,7 @@ function saveSnapshotForDate(data, date) {
 module.exports = {
   saveStatistics,
   saveDailySnapshot,
+  forceSaveDailySnapshot,
   saveSnapshotForDate,
   hasDailyData,
   getHistoricalData,

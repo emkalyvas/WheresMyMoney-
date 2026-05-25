@@ -12,7 +12,7 @@ const cfg = require('../config');
 let isCalculating = false;
 let isBackfilling = false;
 
-async function recalculateAndCache(dateObj = null) {
+async function recalculateAndCache(dateObj = null, forceOverwriteDaily = false) {
   // Ensure we only treat it as a specific backfill date if it's explicitly a Date object.
   // node-cron passes internal arguments to the callback that can cause errors here.
   const isSpecificDate = dateObj instanceof Date;
@@ -64,7 +64,11 @@ async function recalculateAndCache(dateObj = null) {
       await saveSnapshotForDate(statistics, dateStr);
     } else {
       await saveStatistics(statistics);
-      await saveDailySnapshot(statistics);
+      if (forceOverwriteDaily) {
+        await db.forceSaveDailySnapshot(statistics);
+      } else {
+        await saveDailySnapshot(statistics);
+      }
     }
     console.log(`[CacheWorker] Successfully updated statistics for ${isSpecificDate ? dateStr : 'cache'}.`);
   } catch (err) {

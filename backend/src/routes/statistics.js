@@ -38,6 +38,37 @@ router.get('/history', async (req, res) => {
 });
 
 /**
+ * POST /api/statistics/recalculate
+ * 
+ * Force recalculates the statistics and overwrites the historical data for today.
+ */
+router.post('/recalculate', async (req, res) => {
+  try {
+    const { recalculateAndCache } = require('../services/cacheWorker');
+    await recalculateAndCache(null, true);
+
+    const statistics = await getStatistics();
+
+    if (!statistics) {
+      return res.status(503).json({
+        success: false,
+        error: 'Data is currently being calculated. Please try again in a few moments.',
+        retryAfter: 5
+      });
+    }
+
+    res.json({ success: true, data: statistics });
+  } catch (err) {
+    console.error('[statistics] Error force recalculating:', err.message);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: err.message,
+    });
+  }
+});
+
+/**
  * GET /api/statistics
  *
  * Fetches all required data from Firefly III in parallel, resolves currency

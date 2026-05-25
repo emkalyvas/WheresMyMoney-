@@ -4,7 +4,7 @@ import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
 import HistoryModal from './components/HistoryModal';
 import Login from './components/Login';
-import { fetchStatistics, checkAuthStatus } from './api/client';
+import { fetchStatistics, checkAuthStatus, recalculateStatistics } from './api/client';
 import { ChevronRight } from 'lucide-react';
 
 export default function App() {
@@ -75,6 +75,24 @@ export default function App() {
     }
   }, []);
 
+  const handleRecalculate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const stats = await recalculateStatistics();
+      setData(stats);
+    } catch (err) {
+      console.error('Failed to recalculate statistics:', err);
+      if (err.response?.status === 401) {
+        setIsAuthenticated(false);
+      } else {
+        setError(err.response?.data?.error ?? err.message ?? 'Unknown error');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('wmm_token');
     setIsAuthenticated(false);
@@ -137,6 +155,7 @@ export default function App() {
       <Header
         lastUpdated={data?.meta?.lastUpdated}
         onRefresh={load}
+        onRecalculate={handleRecalculate}
         loading={loading}
         onToggleSidebar={handleToggleSidebar}
         isSidebarOpen={isSidebarOpen}
@@ -162,6 +181,9 @@ export default function App() {
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           onLogout={isAuthRequired ? handleLogout : null}
+          onRefresh={load}
+          onRecalculate={handleRecalculate}
+          loading={loading}
         />
         <div className={`sidebar-spacer ${isSidebarCollapsed ? 'collapsed' : ''}`} />
         <main className={`main-content ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`} id="main">
