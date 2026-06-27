@@ -5,7 +5,7 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-      - ./backend/data:/app/data
+      - ./backend/data:/app/data:z
     command: npm run dev
 
   frontend:

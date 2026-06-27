@@ -4,7 +4,7 @@ import { eurFmt } from './StatCard';
 /**
  * General Overview displayed as a list of rows, similar to the Monthly Overview card.
  */
-export default function GeneralOverviewCard({ data, onMetricClick }) {
+export default function GeneralOverviewCard({ data, onMetricClick, calculationMethod = 'mean' }) {
   const { summary, runway, netMonthlyIncome, assets, categories, meta } = data;
 
   const getGrowth = (current, previous) => {
@@ -12,44 +12,54 @@ export default function GeneralOverviewCard({ data, onMetricClick }) {
     return ((current - previous) / Math.abs(previous)) * 100;
   };
 
+  const isMedian = calculationMethod === 'median';
+  const labelPrefix = isMedian ? 'Median' : 'Mean';
+  
+  const currentIncome = isMedian ? summary.medianMonthlyIncome : summary.meanMonthlyIncome;
+  const previousIncome = isMedian ? summary.previousMedianMonthlyIncome : summary.previousMeanMonthlyIncome;
+  const currentExpenses = isMedian ? summary.medianMonthlyExpenses : summary.meanMonthlyExpenses;
+  const previousExpenses = isMedian ? summary.previousMedianMonthlyExpenses : summary.previousMeanMonthlyExpenses;
+  const currentSurplus = isMedian ? summary.medianMonthlySurplus : summary.meanMonthlySurplus;
+  const previousSurplus = isMedian ? summary.previousMedianMonthlySurplus : summary.previousMeanMonthlySurplus;
+
   const allTimeRows = [
     {
-      label: 'Mean Monthly Income',
-      value: eurFmt.format(summary.meanMonthlyIncome),
+      label: `${labelPrefix} Monthly Income`,
+      value: eurFmt.format(currentIncome),
       valueClass: 'text-positive',
       info: `Over ${meta.totalMonths} months`,
-      growth: getGrowth(summary.meanMonthlyIncome, summary.previousMeanMonthlyIncome),
+      growth: getGrowth(currentIncome, previousIncome),
       invertGrowthColor: false,
-      previousValue: summary.previousMeanMonthlyIncome,
-      path: 'summary.meanMonthlyIncome',
+      previousValue: previousIncome,
+      path: isMedian ? 'summary.medianMonthlyIncome' : 'summary.meanMonthlyIncome',
       format: 'currency',
     },
     {
-      label: 'Mean Monthly Expenses',
-      value: eurFmt.format(summary.meanMonthlyExpenses),
+      label: `${labelPrefix} Monthly Expenses`,
+      value: eurFmt.format(currentExpenses),
       valueClass: 'text-negative',
       info: `Over ${meta.totalMonths} months`,
-      growth: getGrowth(summary.meanMonthlyExpenses, summary.previousMeanMonthlyExpenses),
+      growth: getGrowth(currentExpenses, previousExpenses),
       invertGrowthColor: true,
-      previousValue: summary.previousMeanMonthlyExpenses,
-      path: 'summary.meanMonthlyExpenses',
+      previousValue: previousExpenses,
+      path: isMedian ? 'summary.medianMonthlyExpenses' : 'summary.meanMonthlyExpenses',
       format: 'currency',
     },
     {
-      label: 'Mean Monthly Surplus',
-      value: eurFmt.format(summary.meanMonthlySurplus),
-      valueClass: summary.meanMonthlySurplus >= 0 ? 'text-positive' : 'text-negative',
+      label: `${labelPrefix} Monthly Surplus`,
+      value: eurFmt.format(currentSurplus),
+      valueClass: currentSurplus >= 0 ? 'text-positive' : 'text-negative',
       info: `Savings rate: ${summary.savingsRate.toFixed(1)}%`,
-      growth: getGrowth(summary.meanMonthlySurplus, summary.previousMeanMonthlySurplus),
+      growth: getGrowth(currentSurplus, previousSurplus),
       invertGrowthColor: false,
-      previousValue: summary.previousMeanMonthlySurplus,
-      path: 'summary.meanMonthlySurplus',
+      previousValue: previousSurplus,
+      path: isMedian ? 'summary.medianMonthlySurplus' : 'summary.meanMonthlySurplus',
       format: 'currency',
     },
     {
       label: 'Top Expense Category',
       value: categories.topExpense?.name ?? '—',
-      info: categories.topExpense ? `${eurFmt.format(categories.topExpense.monthlyMean)}/mo avg` : '',
+      info: categories.topExpense ? `${eurFmt.format(isMedian ? categories.topExpense.monthlyMedian : categories.topExpense.monthlyMean)}/mo ${isMedian ? 'median' : 'avg'}` : '',
     },
   ];
 

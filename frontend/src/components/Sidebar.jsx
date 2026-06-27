@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, FileDown, ChevronUp, LogOut, RefreshCw } from 'lucide-react';
 
-export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCollapsed, onToggleCollapse, onLogout, onRefresh, onRecalculate, loading }) {
+export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCollapsed, onToggleCollapse, onLogout, onRefresh, onRecalculate, loading, calculationMethod, onCalculationMethodChange }) {
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -76,6 +76,48 @@ export default function Sidebar({ isOpen, onClose, onDownload, downloading, isCo
         </nav>
         
         <div className="sidebar-footer" style={{ marginTop: 'auto', padding: 'var(--space-4)', position: 'relative', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }} ref={menuRef}>
+          <div style={{
+            display: 'flex',
+            background: 'var(--clr-surface)',
+            border: '1px solid var(--clr-border)',
+            borderRadius: 'var(--radius-sm)',
+            overflow: 'hidden',
+            marginBottom: '8px',
+          }}>
+            <button
+              style={{
+                flex: 1,
+                padding: '8px 0',
+                background: calculationMethod === 'mean' ? 'rgba(255,255,255,0.1)' : 'transparent',
+                border: 'none',
+                color: calculationMethod === 'mean' ? 'var(--clr-text)' : 'var(--clr-text-muted)',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: calculationMethod === 'mean' ? 600 : 400,
+                transition: 'all 0.2s',
+              }}
+              onClick={() => onCalculationMethodChange('mean')}
+            >
+              Mean
+            </button>
+            <button
+              style={{
+                flex: 1,
+                padding: '8px 0',
+                background: calculationMethod === 'median' ? 'rgba(255,255,255,0.1)' : 'transparent',
+                border: 'none',
+                color: calculationMethod === 'median' ? 'var(--clr-text)' : 'var(--clr-text-muted)',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: calculationMethod === 'median' ? 600 : 400,
+                transition: 'all 0.2s',
+              }}
+              onClick={() => onCalculationMethodChange('median')}
+            >
+              Median
+            </button>
+          </div>
+
           {showDownloadMenu && !downloading && (
             <div style={{
               position: 'absolute',

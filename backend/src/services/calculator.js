@@ -16,6 +16,13 @@ function sumAmounts(journals) {
   return journals.reduce((acc, j) => acc + j.amount, 0);
 }
 
+function getMedian(values) {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
 /** Generates every YYYY-MM key between startDate and endDate (inclusive). */
 function monthRange(startDate, endDate) {
   const months = [];
@@ -103,7 +110,7 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   const totalMonths = allMonths.length;
 
   // -------------------------------------------------------------------------
-  // 2. Global means
+  // 2. Global means & medians
   // -------------------------------------------------------------------------
   const totalExpenses = sumAmounts(expenses);
   const totalIncome = sumAmounts(income);
@@ -119,12 +126,34 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   const prevMonthKey2 = monthKey(prevMonthDate2);
   const currentMonthKey2 = monthKey(now);
   
-  const currentMonthExpensesTotal = sumAmounts(groupBy(expenses, (j) => monthKey(j.date))[currentMonthKey2] ?? []);
-  const currentMonthIncomeTotal = sumAmounts(groupBy(income, (j) => monthKey(j.date))[currentMonthKey2] ?? []);
+  const expensesByMonthTemp = groupBy(expenses, (j) => monthKey(j.date));
+  const incomeByMonthTemp = groupBy(income, (j) => monthKey(j.date));
+  
+  const currentMonthExpensesTotal = sumAmounts(expensesByMonthTemp[currentMonthKey2] ?? []);
+  const currentMonthIncomeTotal = sumAmounts(incomeByMonthTemp[currentMonthKey2] ?? []);
 
   const previousMeanMonthlyExpenses = previousTotalMonths > 0 ? (totalExpenses - currentMonthExpensesTotal) / previousTotalMonths : 0;
   const previousMeanMonthlyIncome = previousTotalMonths > 0 ? (totalIncome - currentMonthIncomeTotal) / previousTotalMonths : 0;
   const previousMeanMonthlySurplus = previousMeanMonthlyIncome - previousMeanMonthlyExpenses;
+
+  // Global Medians
+  const monthlyExpensesArr = allMonths.map(m => sumAmounts(expensesByMonthTemp[m] ?? []));
+  const monthlyIncomeArr = allMonths.map(m => sumAmounts(incomeByMonthTemp[m] ?? []));
+  const monthlySurplusArr = allMonths.map(m => (sumAmounts(incomeByMonthTemp[m] ?? []) - sumAmounts(expensesByMonthTemp[m] ?? [])));
+  
+  const medianMonthlyExpenses = getMedian(monthlyExpensesArr);
+  const medianMonthlyIncome = getMedian(monthlyIncomeArr);
+  const medianMonthlySurplus = getMedian(monthlySurplusArr);
+
+  // Previous Global Medians
+  const previousMonths = allMonths.filter(m => m !== currentMonthKey2);
+  const previousMonthlyExpensesArr = previousMonths.map(m => sumAmounts(expensesByMonthTemp[m] ?? []));
+  const previousMonthlyIncomeArr = previousMonths.map(m => sumAmounts(incomeByMonthTemp[m] ?? []));
+  const previousMonthlySurplusArr = previousMonths.map(m => (sumAmounts(incomeByMonthTemp[m] ?? []) - sumAmounts(expensesByMonthTemp[m] ?? [])));
+
+  const previousMedianMonthlyExpenses = getMedian(previousMonthlyExpensesArr);
+  const previousMedianMonthlyIncome = getMedian(previousMonthlyIncomeArr);
+  const previousMedianMonthlySurplus = getMedian(previousMonthlySurplusArr);
 
   // -------------------------------------------------------------------------
   // 2b. Rolling Averages (90-day and 180-day up to the last complete day)
@@ -277,14 +306,20 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
       const totalWithoutCurrentMonth = sumAmounts(txs) - currentMonthAmount;
       const previousMonthlyMean = previousTotalMonths > 0 ? totalWithoutCurrentMonth / previousTotalMonths : 0;
 
+      const txsByMonth = groupBy(txs, (j) => monthKey(j.date));
+      const monthlyValues = allMonths.map(m => sumAmounts(txsByMonth[m] ?? []));
+      const previousMonthlyValues = previousMonths.map(m => sumAmounts(txsByMonth[m] ?? []));
+
       return {
         name,
         total: sumAmounts(txs),
         monthlyMean: totalMonths > 0 ? sumAmounts(txs) / totalMonths : 0,
+        monthlyMedian: getMedian(monthlyValues),
         transactionCount: txs.length,
         currentMonthAmount,
         previousMonthAmount,
         previousMonthlyMean,
+        previousMonthlyMedian: getMedian(previousMonthlyValues),
         currentRank,
         previousRank,
         rankChange,
@@ -304,14 +339,20 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
       const totalWithoutCurrentMonth = sumAmounts(txs) - currentMonthAmount;
       const previousMonthlyMean = previousTotalMonths > 0 ? totalWithoutCurrentMonth / previousTotalMonths : 0;
 
+      const txsByMonth = groupBy(txs, (j) => monthKey(j.date));
+      const monthlyValues = allMonths.map(m => sumAmounts(txsByMonth[m] ?? []));
+      const previousMonthlyValues = previousMonths.map(m => sumAmounts(txsByMonth[m] ?? []));
+
       return {
         name,
         total: sumAmounts(txs),
         monthlyMean: totalMonths > 0 ? sumAmounts(txs) / totalMonths : 0,
+        monthlyMedian: getMedian(monthlyValues),
         transactionCount: txs.length,
         currentMonthAmount,
         previousMonthAmount,
         previousMonthlyMean,
+        previousMonthlyMedian: getMedian(previousMonthlyValues),
         currentRank,
         previousRank,
         rankChange,
@@ -463,9 +504,15 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
       meanMonthlyExpenses,
       meanMonthlyIncome,
       meanMonthlySurplus,
+      medianMonthlyExpenses,
+      medianMonthlyIncome,
+      medianMonthlySurplus,
       previousMeanMonthlyExpenses,
       previousMeanMonthlyIncome,
       previousMeanMonthlySurplus,
+      previousMedianMonthlyExpenses,
+      previousMedianMonthlyIncome,
+      previousMedianMonthlySurplus,
       savingsRate,
       totalMonths,
       rolling90DayExpenses,
