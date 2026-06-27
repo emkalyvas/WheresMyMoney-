@@ -15,6 +15,7 @@ export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [selectedMetricHistory, setSelectedMetricHistory] = useState(null);
+  const [calculationMethod, setCalculationMethod] = useState('mean');
 
   // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -184,12 +185,14 @@ export default function App() {
           onRefresh={load}
           onRecalculate={handleRecalculate}
           loading={loading}
+          calculationMethod={calculationMethod}
+          onCalculationMethodChange={setCalculationMethod}
         />
         <div className={`sidebar-spacer ${isSidebarCollapsed ? 'collapsed' : ''}`} />
         <main className={`main-content ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`} id="main">
           {loading && !data && <LoadingState />}
           {error && !data && <ErrorState error={error} onRetry={load} />}
-          {data && <Dashboard data={data} onMetricClick={setSelectedMetricHistory} />}
+          {data && <Dashboard data={data} onMetricClick={setSelectedMetricHistory} calculationMethod={calculationMethod} />}
         </main>
       </div>
 

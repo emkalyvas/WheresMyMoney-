@@ -45,7 +45,7 @@ function Section({ id, title, children }) {
  * Main dashboard — composes all stat cards and chart sections from the
  * statistics payload returned by the backend.
  */
-export default function Dashboard({ data, onMetricClick }) {
+export default function Dashboard({ data, onMetricClick, calculationMethod }) {
   const { summary, surplus, yearOverYear, tax, netMonthlyIncome, assets, categories, monthlyData, runway, meta } = data;
 
   const runwayColor =
@@ -57,7 +57,7 @@ export default function Dashboard({ data, onMetricClick }) {
     <div>
       {/* ── 1. General Overview ────────────────────────────────────────────── */}
       <Section id="overview" title="Overview">
-        <GeneralOverviewCard data={data} onMetricClick={onMetricClick} />
+        <GeneralOverviewCard data={data} onMetricClick={onMetricClick} calculationMethod={calculationMethod} />
       </Section>
 
       {/* ── 2. Monthly Overview ──────────────────────────────────────────── */}
@@ -123,7 +123,7 @@ export default function Dashboard({ data, onMetricClick }) {
 
       {/* ── 4. Category Breakdown ────────────────────────────────────────── */}
       <Section id="category-breakdown" title="Category Breakdown (All-Time)">
-        <CategoryBreakdown expenses={categories.expenses} income={categories.income} onMetricClick={onMetricClick} />
+        <CategoryBreakdown expenses={categories.expenses} income={categories.income} onMetricClick={onMetricClick} calculationMethod={calculationMethod} />
       </Section>
 
       {/* ── 4b. Category Breakdown (90-Day) ────────────────────────────── */}

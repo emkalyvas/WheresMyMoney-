@@ -21,7 +21,7 @@ const INCOME_COLORS = [
  *  - expenses: array of { name, monthlyMean, total, transactionCount }
  *  - income:   same shape
  */
-export default function CategoryBreakdown({ expenses, income, onMetricClick, expensePathKey = "expenses", incomePathKey = "income" }) {
+export default function CategoryBreakdown({ expenses, income, onMetricClick, expensePathKey = "expenses", incomePathKey = "income", calculationMethod = 'mean' }) {
   return (
     <div className="two-col">
       <CategoryList
@@ -32,6 +32,7 @@ export default function CategoryBreakdown({ expenses, income, onMetricClick, exp
         invertGrowthColor={true}
         onMetricClick={onMetricClick}
         type={expensePathKey}
+        calculationMethod={calculationMethod}
       />
       <CategoryList
         title="Income by Category"
@@ -41,13 +42,15 @@ export default function CategoryBreakdown({ expenses, income, onMetricClick, exp
         invertGrowthColor={false}
         onMetricClick={onMetricClick}
         type={incomePathKey}
+        calculationMethod={calculationMethod}
       />
     </div>
   );
 }
 
-function CategoryList({ title, id, items, colors, invertGrowthColor, onMetricClick, type }) {
+function CategoryList({ title, id, items, colors, invertGrowthColor, onMetricClick, type, calculationMethod }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const isMedian = calculationMethod === 'median';
 
   if (!items?.length) {
     return (
@@ -58,30 +61,39 @@ function CategoryList({ title, id, items, colors, invertGrowthColor, onMetricCli
     );
   }
 
-  const max = Math.max(...items.map((i) => i.monthlyMean));
+  const max = Math.max(...items.map((i) => isMedian && i.monthlyMedian !== undefined ? i.monthlyMedian : i.monthlyMean));
 
   const getGrowth = (current, previous) => {
     if (previous == null || previous === 0) return null;
     return ((current - previous) / Math.abs(previous)) * 100;
   };
 
-  const displayedItems = isExpanded ? items : items.slice(0, 10);
+  const sortedItems = [...items].sort((a, b) => {
+    const aValue = isMedian && a.monthlyMedian !== undefined ? a.monthlyMedian : a.monthlyMean;
+    const bValue = isMedian && b.monthlyMedian !== undefined ? b.monthlyMedian : b.monthlyMean;
+    return bValue - aValue;
+  });
+
+  const displayedItems = isExpanded ? sortedItems : sortedItems.slice(0, 10);
 
   return (
     <div className="card fade-in-up" id={id}>
       <div className="card-title">{title}</div>
       <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-muted)', marginBottom: 'var(--space-4)' }}>
-        Mean per month · sorted by total
+        {isMedian ? 'Median' : 'Mean'} per month · sorted by {isMedian ? 'median' : 'mean'}
       </div>
 
       {displayedItems.map((item, i) => {
-        const growth = getGrowth(item.monthlyMean, item.previousMonthlyMean);
+        const currentValue = isMedian && item.monthlyMedian !== undefined ? item.monthlyMedian : item.monthlyMean;
+        const previousValue = isMedian && item.previousMonthlyMedian !== undefined ? item.previousMonthlyMedian : item.previousMonthlyMean;
+        const growth = getGrowth(currentValue, previousValue);
+        const currentPath = isMedian && item.monthlyMedian !== undefined ? 'monthlyMedian' : 'monthlyMean';
 
         return (
           <div 
             className={`category-item ${onMetricClick ? 'clickable' : ''}`} 
             key={item.name}
-            onClick={() => onMetricClick && onMetricClick({ path: `categories.${type}[?(@.name=="${item.name}")].monthlyMean`, label: `${item.name} (${type})`, format: 'currency' })}
+            onClick={() => onMetricClick && onMetricClick({ path: `categories.${type}[?(@.name=="${item.name}")].${currentPath}`, label: `${item.name} (${type})`, format: 'currency' })}
             style={onMetricClick ? { padding: 'var(--space-3)', margin: '0 calc(var(--space-3) * -1)', borderRadius: 'var(--radius-sm)', transition: 'background var(--transition-fast)' } : {}}
             onMouseEnter={(e) => onMetricClick && (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)')}
             onMouseLeave={(e) => onMetricClick && (e.currentTarget.style.background = 'transparent')}
@@ -94,7 +106,7 @@ function CategoryList({ title, id, items, colors, invertGrowthColor, onMetricCli
               <div
                 className="category-bar-fill"
                 style={{
-                  width: max > 0 ? `${(item.monthlyMean / max) * 100}%` : '0%',
+                  width: max > 0 ? `${(currentValue / max) * 100}%` : '0%',
                   background: colors[i % colors.length],
                   opacity: 0.85,
                 }}
@@ -118,11 +130,11 @@ function CategoryList({ title, id, items, colors, invertGrowthColor, onMetricCli
               )}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                 <span className="category-value" style={{ color: 'var(--clr-text-primary)', lineHeight: 1.2 }}>
-                  {eurFmt.format(item.monthlyMean)}
+                  {eurFmt.format(currentValue)}
                 </span>
                 {growth != null && (
                   <span style={{ fontSize: '10px', color: 'var(--clr-text-muted)', marginTop: '2px' }}>
-                    Prev: {eurFmt.format(item.previousMonthlyMean)}
+                    Prev: {eurFmt.format(previousValue)}
                   </span>
                 )}
               </div>
