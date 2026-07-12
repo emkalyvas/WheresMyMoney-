@@ -56,7 +56,7 @@ async function fetchTrading212Assets() {
 
       const uninvestedCash = parseFloat(cashData.free ?? cashData.total ?? cashData.cash ?? '0');
       const assets = [];
-      const accSuffix = accounts.length > 1 ? ` (${index + 1})` : '';
+      const accSuffix = account.name ? ` - ${account.name}` : (accounts.length > 1 ? ` (${index + 1})` : '');
       const idPrefix = accounts.length > 1 ? `t212_${index}_` : 't212_';
 
       if (uninvestedCash > 0) {

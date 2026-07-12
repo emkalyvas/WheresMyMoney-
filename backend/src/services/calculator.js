@@ -431,7 +431,7 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   });
 
   const projCfg = config.projections;
-  const currentTotalInvested = assetList.filter(a => a.currency === 'BTC' || a.currency === 'ADA' || (a.id.startsWith('t212_') && a.id !== 't212_cash')).reduce((s, a) => s + a.balanceEur, 0);
+  const currentTotalInvested = assetList.filter(a => a.currency === 'BTC' || a.currency === 'ADA' || (a.id.startsWith('t212_') && !a.id.endsWith('_cash'))).reduce((s, a) => s + a.balanceEur, 0);
   const currentCash = totalAssetsEur - currentTotalInvested;
 
   // Runway: how many months of spending can we sustain from assets (using 90-day rolling avg)
@@ -563,13 +563,24 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
       totalBtcEur: assetList.filter(a => a.currency === 'BTC').reduce((s, a) => s + a.balanceEur, 0),
       totalAda: assetList.filter(a => a.currency === 'ADA').reduce((s, a) => s + a.balance, 0),
       totalAdaEur: assetList.filter(a => a.currency === 'ADA').reduce((s, a) => s + a.balanceEur, 0),
-      totalInvestedEur: assetList.filter(a => a.currency === 'BTC' || a.currency === 'ADA' || (a.id.startsWith('t212_') && a.id !== 't212_cash')).reduce((s, a) => s + a.balanceEur, 0),
-      investedStocks: assetList.filter(a => a.id.startsWith('t212_') && a.id !== 't212_cash').map(a => ({
-        name: a.name.replace(' (Trading212)', ''),
-        ticker: a.ticker || a.name.split(' ')[0],
-        balance: a.balance,
-        balanceEur: a.balanceEur
-      })),
+      totalInvestedEur: assetList.filter(a => a.currency === 'BTC' || a.currency === 'ADA' || (a.id.startsWith('t212_') && !a.id.endsWith('_cash'))).reduce((s, a) => s + a.balanceEur, 0),
+      investedStocks: Object.values(assetList
+        .filter(a => a.id.startsWith('t212_') && !a.id.endsWith('_cash'))
+        .reduce((acc, a) => {
+          const ticker = a.ticker || a.name.split(' ')[0];
+          if (!acc[ticker]) {
+            acc[ticker] = {
+              name: a.name.replace(/ \(Trading212.*\)/, ''),
+              ticker: ticker,
+              balance: 0,
+              balanceEur: 0
+            };
+          }
+          acc[ticker].balance += a.balance;
+          acc[ticker].balanceEur += a.balanceEur;
+          return acc;
+        }, {})
+      ),
     },
     categories: {
       expenses: categoryExpenses,

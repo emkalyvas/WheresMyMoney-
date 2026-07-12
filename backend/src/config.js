@@ -30,6 +30,7 @@ module.exports = {
           apiKey: process.env.TRADING212_API_KEY,
           apiSecret: process.env.TRADING212_API_SECRET || '',
           env: process.env.TRADING212_ENV || 'live',
+          name: process.env.TRADING212_ACCOUNT_NAME || '',
         });
       }
       // 2. Multiple accounts support via comma-separated lists
@@ -37,6 +38,7 @@ module.exports = {
         const keys = process.env.TRADING212_API_KEYS.split(',').map(s => s.trim());
         const secrets = (process.env.TRADING212_API_SECRETS || '').split(',').map(s => s.trim());
         const envs = (process.env.TRADING212_ENVS || '').split(',').map(s => s.trim());
+        const names = (process.env.TRADING212_ACCOUNT_NAMES || '').split(',').map(s => s.trim());
         
         for (let i = 0; i < keys.length; i++) {
           if (keys[i]) {
@@ -44,6 +46,7 @@ module.exports = {
               apiKey: keys[i],
               apiSecret: secrets[i] || '',
               env: envs[i] || 'live',
+              name: names[i] || '',
             });
           }
         }
