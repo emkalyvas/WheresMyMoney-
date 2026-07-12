@@ -22,6 +22,34 @@ module.exports = {
       apiSecret: process.env.TRADING212_API_SECRET || '',
       env: process.env.TRADING212_ENV || 'live',
     },
+    trading212Accounts: (() => {
+      const accounts = [];
+      // 1. Single account legacy support
+      if (process.env.TRADING212_API_KEY) {
+        accounts.push({
+          apiKey: process.env.TRADING212_API_KEY,
+          apiSecret: process.env.TRADING212_API_SECRET || '',
+          env: process.env.TRADING212_ENV || 'live',
+        });
+      }
+      // 2. Multiple accounts support via comma-separated lists
+      if (process.env.TRADING212_API_KEYS) {
+        const keys = process.env.TRADING212_API_KEYS.split(',').map(s => s.trim());
+        const secrets = (process.env.TRADING212_API_SECRETS || '').split(',').map(s => s.trim());
+        const envs = (process.env.TRADING212_ENVS || '').split(',').map(s => s.trim());
+        
+        for (let i = 0; i < keys.length; i++) {
+          if (keys[i]) {
+            accounts.push({
+              apiKey: keys[i],
+              apiSecret: secrets[i] || '',
+              env: envs[i] || 'live',
+            });
+          }
+        }
+      }
+      return accounts;
+    })(),
   },
 
   calculations: {
