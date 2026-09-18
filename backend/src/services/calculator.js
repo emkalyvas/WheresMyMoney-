@@ -51,6 +51,8 @@ function normalizeTransactions(rawTransactions) {
         category: journal.category_name || 'Uncategorized',
         tags: journal.tags ?? [],
         description: journal.description ?? '',
+        source_name: journal.source_name,
+        destination_name: journal.destination_name,
       });
     }
   }
@@ -93,12 +95,42 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
   const previousYear = currentYear - 1;
 
   // -------------------------------------------------------------------------
+  // 0. Identify ignored accounts
+  // -------------------------------------------------------------------------
+  const ignoredNames = new Set(config.firefly.ignoredAccounts.map(n => n.toLowerCase()));
+  
+  const checkAndIgnore = (acc) => {
+    if (acc.attributes && acc.attributes.include_net_worth === false) {
+      const name = acc.name || acc.attributes?.name || '';
+      if (name) ignoredNames.add(name.toLowerCase());
+    }
+  };
+  
+  assetAccounts.forEach(checkAndIgnore);
+  liabilityAccounts.forEach(checkAndIgnore);
+
+  const isIgnored = (name) => {
+    if (!name) return false;
+    return ignoredNames.has(name.toLowerCase());
+  };
+
+  const isIgnoredAccount = (acc) => {
+    const name = acc.name || acc.attributes?.name || '';
+    return isIgnored(name);
+  };
+
+  // -------------------------------------------------------------------------
   // 1. Normalise & filter transactions
   // -------------------------------------------------------------------------
   const rawAllJournals = normalizeTransactions(rawTransactions);
   
   // CRITICAL: Bound transactions by the 'now' date so backfill snapshots are accurate
-  const allJournals = rawAllJournals.filter((j) => j.date <= now);
+  // Also filter out any transactions that involve an ignored account
+  const allJournals = rawAllJournals.filter((j) => {
+    if (j.date > now) return false;
+    if (isIgnored(j.source_name) || isIgnored(j.destination_name)) return false;
+    return true;
+  });
 
   const journals = allJournals.filter((j) => j.date >= startDate && j.type !== 'transfer');
 
@@ -412,17 +444,8 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
     };
   }
 
-  const ignoredNames = new Set(config.firefly.ignoredAccounts.map(n => n.toLowerCase()));
-  const isIgnored = (acc) => {
-    if (acc.attributes && acc.attributes.include_net_worth === false) {
-      return true;
-    }
-    const name = acc.name || acc.attributes?.name || '';
-    return ignoredNames.has(name.toLowerCase());
-  };
-
-  const assetList = assetAccounts.filter(a => !isIgnored(a)).map((a) => mapAccount(a, 'asset'));
-  const liabilityList = liabilityAccounts.filter(a => !isIgnored(a)).map((a) => mapAccount(a, 'liability'));
+  const assetList = assetAccounts.filter(a => !isIgnoredAccount(a)).map((a) => mapAccount(a, 'asset'));
+  const liabilityList = liabilityAccounts.filter(a => !isIgnoredAccount(a)).map((a) => mapAccount(a, 'liability'));
 
   const totalAssetsEur = assetList.reduce((s, a) => s + a.balanceEur, 0);
   const totalLiabilitiesEur = liabilityList.reduce((s, a) => s + Math.abs(a.balanceEur), 0);
