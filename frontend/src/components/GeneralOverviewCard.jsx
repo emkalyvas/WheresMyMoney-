@@ -1,11 +1,14 @@
+import React, { useState } from 'react';
 import { Activity } from 'lucide-react';
 import { eurFmt } from './StatCard';
+import CashBreakdownModal from './CashBreakdownModal';
 
 /**
  * General Overview displayed as a list of rows, similar to the Monthly Overview card.
  */
 export default function GeneralOverviewCard({ data, onMetricClick, calculationMethod = 'mean' }) {
   const { summary, runway, netMonthlyIncome, assets, categories, meta } = data;
+  const [showCashModal, setShowCashModal] = useState(false);
 
   const getGrowth = (current, previous) => {
     if (previous == null || previous === 0) return null;
@@ -174,7 +177,15 @@ export default function GeneralOverviewCard({ data, onMetricClick, calculationMe
           {eurFmt.format(assets.netWorthEur)}
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 'var(--space-4)', marginTop: 'var(--space-3)', fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div 
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background-color 0.2s' }} 
+            className="hover-bg"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowCashModal(true);
+            }}
+            title="Click to see cash breakdown"
+          >
             <span style={{ fontWeight: 600 }}>Cash</span>
             <span style={{ opacity: 0.7 }}>{eurFmt.format(runway.totalCashEur)}</span>
           </div>
@@ -216,6 +227,13 @@ export default function GeneralOverviewCard({ data, onMetricClick, calculationMe
       </div>
 
       {ninetyDayRows.map(renderRow)}
+
+      {showCashModal && (
+        <CashBreakdownModal 
+          accounts={assets.accounts} 
+          onClose={() => setShowCashModal(false)} 
+        />
+      )}
     </div>
   );
 }
