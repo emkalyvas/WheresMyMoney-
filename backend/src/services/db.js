@@ -229,6 +229,39 @@ function saveSnapshotForDate(data, date) {
   });
 }
 
+/**
+ * Get the final statistics snapshot of a specific year
+ * @param {string} year YYYY
+ * @returns {Promise<Object|null>}
+ */
+function getSnapshotByYear(year) {
+  return new Promise((resolve, reject) => {
+    // We order by date descending and get the first one that matches the year prefix.
+    const query = `
+      SELECT payload, date as updated_at 
+      FROM daily_statistics 
+      WHERE date LIKE ? 
+      ORDER BY date DESC 
+      LIMIT 1
+    `;
+    db.get(query, [`${year}-%`], (err, row) => {
+      if (err) {
+        reject(err);
+      } else if (row) {
+        try {
+          const data = JSON.parse(row.payload);
+          data._cachedAt = row.updated_at;
+          resolve(data);
+        } catch (e) {
+          reject(e);
+        }
+      } else {
+        resolve(null);
+      }
+    });
+  });
+}
+
 module.exports = {
   saveStatistics,
   saveDailySnapshot,
@@ -236,5 +269,6 @@ module.exports = {
   saveSnapshotForDate,
   hasDailyData,
   getHistoricalData,
-  getStatistics
+  getStatistics,
+  getSnapshotByYear
 };

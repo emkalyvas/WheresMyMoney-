@@ -12,10 +12,15 @@ All endpoints are relative to `/api/statistics`.
 ### 1. Get Core Statistics
 **Endpoint:** `GET /`
 
-Returns the most recently calculated dashboard statistics from the SQLite cache. This endpoint powers the main dashboard and is designed for sub-millisecond response times since it avoids hitting external APIs on every request.
+Returns the most recently calculated dashboard statistics from the SQLite cache. If the `year` query parameter is provided, it returns the final historical snapshot available for that specific year instead of the current cache. This endpoint powers the main dashboard and is designed for sub-millisecond response times since it avoids hitting external APIs on every request.
+
+**Query Parameters:**
+- `year` (optional): `string`. A 4-digit year (e.g., `2023`). If provided, the API returns the final statistics snapshot recorded in that year.
 
 **Responses:**
 - `200 OK`: Returns the full statistics payload.
+- `400 Bad Request`: Returned if the `year` parameter is invalid.
+- `404 Not Found`: Returned if no snapshot is found for the requested `year`.
 - `503 Service Unavailable`: Returned if the cache is currently being built (e.g. immediately upon cold startup).
 
 **Example Response:**
