@@ -1,7 +1,7 @@
 'use strict';
 
 const express = require('express');
-const { getStatistics, getHistoricalData } = require('../services/db');
+const { getStatistics, getHistoricalData, getSnapshotByYear } = require('../services/db');
 
 const router = express.Router();
 
@@ -79,14 +79,26 @@ router.post('/recalculate', async (req, res) => {
  */
 router.get('/', async (req, res) => {
   try {
-    const statistics = await getStatistics();
+    const { year } = req.query;
+    let statistics;
 
-    if (!statistics) {
-      return res.status(503).json({
-        success: false,
-        error: 'Data is currently being calculated. Please try again in a few moments.',
-        retryAfter: 5
-      });
+    if (year) {
+      if (!/^\d{4}$/.test(year)) {
+        return res.status(400).json({ success: false, error: 'Invalid year format. Expected YYYY.' });
+      }
+      statistics = await getSnapshotByYear(year);
+      if (!statistics) {
+        return res.status(404).json({ success: false, error: `No statistics snapshot found for year ${year}.` });
+      }
+    } else {
+      statistics = await getStatistics();
+      if (!statistics) {
+        return res.status(503).json({
+          success: false,
+          error: 'Data is currently being calculated. Please try again in a few moments.',
+          retryAfter: 5
+        });
+      }
     }
 
     res.json({ success: true, data: statistics });

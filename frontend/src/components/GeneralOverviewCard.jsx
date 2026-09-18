@@ -279,7 +279,7 @@ export default function GeneralOverviewCard({ data, onMetricClick, calculationMe
 
       {showLiabilitiesModal && (
         <LiabilitiesBreakdownModal 
-          liabilities={assets.accounts.filter(a => a.balanceEur < -0.01)} 
+          liabilities={assets.liabilities} 
           onClose={() => setShowLiabilitiesModal(false)} 
         />
       )}
