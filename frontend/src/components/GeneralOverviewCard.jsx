@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Activity } from 'lucide-react';
 import { eurFmt } from './StatCard';
 import CashBreakdownModal from './CashBreakdownModal';
+import ExchangeRateModal from './ExchangeRateModal';
 
 /**
  * General Overview displayed as a list of rows, similar to the Monthly Overview card.
@@ -9,6 +10,7 @@ import CashBreakdownModal from './CashBreakdownModal';
 export default function GeneralOverviewCard({ data, onMetricClick, calculationMethod = 'mean' }) {
   const { summary, runway, netMonthlyIncome, assets, categories, meta } = data;
   const [showCashModal, setShowCashModal] = useState(false);
+  const [selectedAssetForRate, setSelectedAssetForRate] = useState(null);
 
   const getGrowth = (current, previous) => {
     if (previous == null || previous === 0) return null;
@@ -194,16 +196,41 @@ export default function GeneralOverviewCard({ data, onMetricClick, calculationMe
             <span style={{ fontWeight: 600 }}>Cash</span>
             <span style={{ opacity: 0.7 }}>{eurFmt.format(runway.totalCashEur)}</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div 
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background-color 0.2s' }} 
+            className="hover-bg"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedAssetForRate({ name: 'Bitcoin', ticker: 'BTC', balance: assets.totalBtc, balanceEur: assets.totalBtcEur });
+            }}
+            title="Click to see exchange rate"
+          >
             <span style={{ fontWeight: 600 }}>₿ {assets.totalBtc.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</span>
             <span style={{ opacity: 0.7 }}>{eurFmt.format(assets.totalBtcEur)}</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div 
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background-color 0.2s' }} 
+            className="hover-bg"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedAssetForRate({ name: 'Cardano', ticker: 'ADA', balance: assets.totalAda, balanceEur: assets.totalAdaEur });
+            }}
+            title="Click to see exchange rate"
+          >
             <span style={{ fontWeight: 600 }}>₳ {assets.totalAda.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
             <span style={{ opacity: 0.7 }}>{eurFmt.format(assets.totalAdaEur)}</span>
           </div>
           {assets.investedStocks?.map(stock => (
-            <div key={stock.ticker} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div 
+              key={stock.ticker} 
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background-color 0.2s' }}
+              className="hover-bg"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedAssetForRate({ name: stock.name || stock.ticker, ticker: stock.ticker, balance: stock.balance, balanceEur: stock.balanceEur });
+              }}
+              title="Click to see exchange rate"
+            >
               <span style={{ fontWeight: 600 }}>{stock.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {stock.ticker}</span>
               <span style={{ opacity: 0.7 }}>{eurFmt.format(stock.balanceEur)}</span>
             </div>
@@ -237,6 +264,13 @@ export default function GeneralOverviewCard({ data, onMetricClick, calculationMe
         <CashBreakdownModal 
           accounts={assets.accounts} 
           onClose={() => setShowCashModal(false)} 
+        />
+      )}
+
+      {selectedAssetForRate && (
+        <ExchangeRateModal 
+          asset={selectedAssetForRate} 
+          onClose={() => setSelectedAssetForRate(null)} 
         />
       )}
     </div>
