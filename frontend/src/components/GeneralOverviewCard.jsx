@@ -167,15 +167,20 @@ export default function GeneralOverviewCard({ data, onMetricClick, calculationMe
 
       <div 
         style={{ textAlign: 'center', margin: 'var(--space-4) 0', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)' }}
-        className={onMetricClick ? 'clickable' : ''}
-        onClick={() => onMetricClick && onMetricClick({ path: 'assets.netWorthEur', label: 'Total Net Worth', format: 'currency' })}
       >
-        <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
-          Total Net Worth
+        <div 
+          className={onMetricClick ? 'clickable' : ''}
+          onClick={() => onMetricClick && onMetricClick({ path: 'assets.netWorthEur', label: 'Total Net Worth', format: 'currency' })}
+          style={{ display: 'inline-block', padding: '8px', borderRadius: '8px', width: '100%' }}
+        >
+          <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+            Total Net Worth
+          </div>
+          <div style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, color: assets.netWorthEur >= 0 ? 'var(--clr-positive)' : 'var(--clr-negative)' }}>
+            {eurFmt.format(assets.netWorthEur)}
+          </div>
         </div>
-        <div style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, color: assets.netWorthEur >= 0 ? 'var(--clr-positive)' : 'var(--clr-negative)' }}>
-          {eurFmt.format(assets.netWorthEur)}
-        </div>
+        
         <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 'var(--space-4)', marginTop: 'var(--space-3)', fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)' }}>
           <div 
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background-color 0.2s' }} 
