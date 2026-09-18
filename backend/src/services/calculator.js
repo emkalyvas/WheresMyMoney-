@@ -414,6 +414,9 @@ function calculate(rawTransactions, assetAccounts, liabilityAccounts, eurRates, 
 
   const ignoredNames = new Set(config.firefly.ignoredAccounts.map(n => n.toLowerCase()));
   const isIgnored = (acc) => {
+    if (acc.attributes && acc.attributes.include_net_worth === false) {
+      return true;
+    }
     const name = acc.name || acc.attributes?.name || '';
     return ignoredNames.has(name.toLowerCase());
   };
