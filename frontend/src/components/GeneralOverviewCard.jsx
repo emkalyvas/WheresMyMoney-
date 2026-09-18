@@ -3,6 +3,7 @@ import { Activity } from 'lucide-react';
 import { eurFmt } from './StatCard';
 import CashBreakdownModal from './CashBreakdownModal';
 import ExchangeRateModal from './ExchangeRateModal';
+import LiabilitiesBreakdownModal from './LiabilitiesBreakdownModal';
 
 /**
  * General Overview displayed as a list of rows, similar to the Monthly Overview card.
@@ -11,6 +12,7 @@ export default function GeneralOverviewCard({ data, onMetricClick, calculationMe
   const { summary, runway, netMonthlyIncome, assets, categories, meta } = data;
   const [showCashModal, setShowCashModal] = useState(false);
   const [selectedAssetForRate, setSelectedAssetForRate] = useState(null);
+  const [showLiabilitiesModal, setShowLiabilitiesModal] = useState(false);
 
   const getGrowth = (current, previous) => {
     if (previous == null || previous === 0) return null;
@@ -236,7 +238,15 @@ export default function GeneralOverviewCard({ data, onMetricClick, calculationMe
             </div>
           ))}
           {assets.totalLiabilitiesEur > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div 
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background-color 0.2s' }}
+              className="hover-bg"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowLiabilitiesModal(true);
+              }}
+              title="Click to see liabilities breakdown"
+            >
               <span style={{ fontWeight: 600 }}>Liabilities</span>
               <span style={{ opacity: 0.7, color: 'var(--clr-negative)' }}>{eurFmt.format(-assets.totalLiabilitiesEur)}</span>
             </div>
@@ -264,6 +274,13 @@ export default function GeneralOverviewCard({ data, onMetricClick, calculationMe
         <CashBreakdownModal 
           accounts={assets.accounts} 
           onClose={() => setShowCashModal(false)} 
+        />
+      )}
+
+      {showLiabilitiesModal && (
+        <LiabilitiesBreakdownModal 
+          liabilities={assets.accounts.filter(a => a.balanceEur < -0.01)} 
+          onClose={() => setShowLiabilitiesModal(false)} 
         />
       )}
 
