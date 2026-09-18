@@ -13,7 +13,7 @@ export default function CashBreakdownModal({ accounts, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', width: '90%', padding: 'var(--space-5)' }}>
+      <div className="modal-content card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', width: '90%', padding: 'var(--space-5)', backgroundColor: 'var(--clr-bg-base)' }}>
         <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Wallet size={20} style={{ color: 'var(--clr-text-main)' }} />
@@ -28,13 +28,13 @@ export default function CashBreakdownModal({ accounts, onClose }) {
           </button>
         </div>
         
-        <div style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)', textAlign: 'center', padding: 'var(--space-3)', backgroundColor: 'var(--clr-bg-alt)', borderRadius: 'var(--radius-md)' }}>
+        <div style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-sm)', color: 'var(--clr-text-muted)', textAlign: 'center', padding: 'var(--space-3)', backgroundColor: 'var(--clr-bg-elevated)', borderRadius: 'var(--radius-md)' }}>
           Total Cash: <strong style={{ color: 'var(--clr-text-main)', fontSize: 'var(--font-size-lg)', display: 'block', marginTop: '4px' }}>{eurFmt.format(totalCash)}</strong>
         </div>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px' }}>
           {cashAccounts.map(acc => (
-            <div key={acc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-3)', backgroundColor: 'var(--clr-bg-main)', border: '1px solid var(--clr-border-light)', borderRadius: 'var(--radius-sm)' }}>
+            <div key={acc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-3)', backgroundColor: 'var(--clr-bg-surface)', border: '1px solid var(--clr-border-light)', borderRadius: 'var(--radius-sm)' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontWeight: 500 }}>{acc.name}</span>
                 {acc.currency !== 'EUR' && (
