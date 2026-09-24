@@ -14,7 +14,6 @@ services:
       VAT_TAG: ${VAT_TAG:-ΦΠΑ}
       NO_VAT_TAG: ${NO_VAT_TAG:-No VAT}
       DEFAULT_VAT: ${DEFAULT_VAT:-24}
-      VAT_EXPANSE_TAG: ${VAT_EXPANSE_TAG:-}
       VAT_EXPENSE_TAG: ${VAT_EXPENSE_TAG:-}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
