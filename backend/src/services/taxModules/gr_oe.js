@@ -89,6 +89,15 @@ function calculate(context) {
   
   const vatLiability = vatCollected - vatPaid;
 
+  const vatExpenseTags = config.vatExpenseTags;
+  let vatPaidToGovt = 0;
+  if (vatExpenseTags && vatExpenseTags.length > 0) {
+    vatPaidToGovt = allJournals
+      .filter((j) => j.date.getFullYear() === currentYear && j.type === 'withdrawal' && j.tags && vatExpenseTags.every(tag => j.tags.includes(tag)))
+      .reduce((acc, j) => acc + j.amount, 0);
+  }
+  const vatRemaining = vatLiability - vatPaidToGovt;
+
   const breakdown = [
     {
       label: `Corporate Income Tax (CIT)`,
@@ -141,7 +150,9 @@ function calculate(context) {
     vatLiability: {
       collected: vatCollected,
       paid: vatPaid,
-      total: vatLiability
+      total: vatLiability,
+      paidToGovt: vatPaidToGovt,
+      remaining: vatRemaining
     },
     netTaxableProfit,
     expectedTaxTotal,

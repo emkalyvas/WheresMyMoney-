@@ -90,13 +90,43 @@ export default function TaxBreakdown({ tax, netMonthlyIncome, onMetricClick }) {
       {/* VAT Liability section */}
       <div 
         className={`tax-row ${onMetricClick ? 'clickable' : ''}`} 
-        onClick={() => onMetricClick && onMetricClick({ path: 'tax.vatLiability.total', label: 'VAT Liability', format: 'currency' })}
+        onClick={() => onMetricClick && onMetricClick({ path: 'tax.vatLiability.total', label: 'Total VAT Liability', format: 'currency' })}
       >
         <span className="tax-row-label" title="VAT Collected − VAT Paid">
-          VAT Liability (Collected − Paid)
+          Total VAT Liability
         </span>
-        <span className={`tax-row-value ${vatLiability.total > 0 ? 'text-warning' : 'text-positive'}`}>
+        <span className="tax-row-value">
           {eurFmt.format(vatLiability.total)}
+        </span>
+      </div>
+
+      <div 
+        className={`tax-row ${onMetricClick ? 'clickable' : ''}`} 
+        onClick={() => onMetricClick && onMetricClick({ path: 'tax.vatLiability.paidToGovt', label: 'VAT Paid to Govt', format: 'currency' })}
+      >
+        <span className="tax-row-label" title="VAT already paid to government this year">
+          VAT Paid to Govt
+        </span>
+        <span className="tax-row-value">
+          − {eurFmt.format(vatLiability.paidToGovt || 0)}
+        </span>
+      </div>
+
+      <div 
+        className={`tax-row ${onMetricClick ? 'clickable' : ''}`} 
+        onClick={() => onMetricClick && onMetricClick({ path: 'tax.vatLiability.remaining', label: 'Remaining VAT', format: 'currency' })}
+      >
+        <span className="tax-row-label" style={{ fontWeight: 600 }}>
+          Remaining VAT
+        </span>
+        <span 
+          className={`tax-row-value ${(vatLiability.remaining || 0) <= 0 ? 'text-positive' : 'text-negative'}`}
+          style={{ fontWeight: 600 }}
+        >
+          {eurFmt.format(Math.abs(vatLiability.remaining || 0))} 
+          <span style={{ fontSize: 'var(--font-size-xs)', marginLeft: '4px', fontWeight: 'normal' }}>
+            { (vatLiability.remaining || 0) <= 0 ? '(Deductible)' : '(Payable)' }
+          </span>
         </span>
       </div>
 
