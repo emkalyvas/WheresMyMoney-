@@ -20,16 +20,54 @@ function calculate(context) {
   } = context;
 
   const companyTag = config.companyTag;
-  
-  const companyExpensesThisYear = allJournals
-    .filter((j) => j.date.getFullYear() === currentYear && j.type === 'withdrawal' && j.tags && j.tags.includes(companyTag))
-    .reduce((acc, j) => acc + j.amount, 0);
+  const defaultVat = config.defaultVat;
+  const noVatTag = config.noVatTag;
+  const vatTagPrefix = config.vatTag;
 
-  const grossRevenue = allJournals
-    .filter((j) => j.date.getFullYear() === currentYear && j.type === 'deposit' && j.tags && j.tags.includes(companyTag))
-    .reduce((acc, j) => acc + j.amount, 0);
+  const calculateVatForJournal = (j) => {
+    let vatRate = defaultVat;
+    if (j.tags && j.tags.includes(noVatTag)) {
+      vatRate = 0;
+    } else if (j.tags) {
+      const vatTagStr = j.tags.find(t => t.startsWith(vatTagPrefix));
+      if (vatTagStr) {
+        const lastTwo = vatTagStr.slice(-2);
+        const parsed = parseInt(lastTwo, 10);
+        if (!isNaN(parsed)) {
+          vatRate = parsed;
+        }
+      }
+    }
+    const netAmount = j.amount / (1 + vatRate / 100);
+    const vatAmount = j.amount - netAmount;
+    return { gross: j.amount, net: netAmount, vat: vatAmount };
+  };
 
-  const netTaxableProfit = Math.max(0, grossRevenue - companyExpensesThisYear);
+  const expensesJournals = allJournals.filter((j) => j.date.getFullYear() === currentYear && j.type === 'withdrawal' && j.tags && j.tags.includes(companyTag));
+  let companyExpensesNet = 0;
+  let companyExpensesGross = 0;
+  let vatPaid = 0;
+
+  for (const j of expensesJournals) {
+    const { gross, net, vat } = calculateVatForJournal(j);
+    companyExpensesGross += gross;
+    companyExpensesNet += net;
+    vatPaid += vat;
+  }
+
+  const revenueJournals = allJournals.filter((j) => j.date.getFullYear() === currentYear && j.type === 'deposit' && j.tags && j.tags.includes(companyTag));
+  let revenueNet = 0;
+  let revenueGross = 0;
+  let vatCollected = 0;
+
+  for (const j of revenueJournals) {
+    const { gross, net, vat } = calculateVatForJournal(j);
+    revenueGross += gross;
+    revenueNet += net;
+    vatCollected += vat;
+  }
+
+  const netTaxableProfit = Math.max(0, revenueNet - companyExpensesNet);
 
   const corporateIncomeTax = netTaxableProfit * config.incomeTaxRate;
   const businessTax = config.businessTax;
@@ -47,7 +85,9 @@ function calculate(context) {
   }
 
   const expectedTaxTotal = corporateIncomeTax + businessTax + advanceTax - previousAdvanceTax;
-  const effectiveTaxRate = grossRevenue > 0 ? (expectedTaxTotal / grossRevenue) * 100 : 0;
+  const effectiveTaxRate = revenueNet > 0 ? (expectedTaxTotal / revenueNet) * 100 : 0;
+  
+  const vatLiability = vatCollected - vatPaid;
 
   const breakdown = [
     {
@@ -86,8 +126,23 @@ function calculate(context) {
   return {
     enabled: true,
     description: "Greek OE Company Tax Calculation (CIT, Advance Tax, and Flat Business Tax).",
-    grossRevenue,
-    companyExpenses: companyExpensesThisYear,
+    grossRevenue: revenueNet, // Kept for backwards compatibility
+    companyExpenses: companyExpensesNet, // Kept for backwards compatibility
+    revenue: {
+      net: revenueNet,
+      gross: revenueGross,
+      vat: vatCollected
+    },
+    expenses: {
+      net: companyExpensesNet,
+      gross: companyExpensesGross,
+      vat: vatPaid
+    },
+    vatLiability: {
+      collected: vatCollected,
+      paid: vatPaid,
+      total: vatLiability
+    },
     netTaxableProfit,
     expectedTaxTotal,
     effectiveTaxRate,

@@ -63,6 +63,9 @@ module.exports = {
     advanceTaxRate: parseFloat(process.env.ADVANCE_TAX_RATE || '0.40'),
     cacheTtlMinutes: parseInt(process.env.STATISTICS_CACHE_TTL_MINUTES || '15', 10),
     companyTag: process.env.COMPANY_TAG || 'MnApps',
+    vatTag: process.env.VAT_TAG || 'ΦΠΑ',
+    noVatTag: process.env.NO_VAT_TAG || 'No VAT',
+    defaultVat: parseFloat(process.env.DEFAULT_VAT || '24'),
   },
 
   projections: {
