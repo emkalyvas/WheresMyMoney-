@@ -11,6 +11,9 @@ export default function TaxBreakdown({ tax, netMonthlyIncome, onMetricClick }) {
     description,
     grossRevenue,
     companyExpenses,
+    revenue = { gross: grossRevenue || 0, net: grossRevenue || 0, vat: 0 },
+    expenses = { gross: companyExpenses || 0, net: companyExpenses || 0, vat: 0 },
+    vatLiability = { collected: 0, paid: 0, total: 0 },
     netTaxableProfit,
     expectedTaxTotal,
     effectiveTaxRate,
@@ -19,22 +22,24 @@ export default function TaxBreakdown({ tax, netMonthlyIncome, onMetricClick }) {
 
   const rows = [
     {
-      label: 'Gross Company Revenue',
-      value: eurFmt.format(grossRevenue),
+      label: 'Company Revenue (Net)',
+      value: eurFmt.format(revenue.net),
       info: 'All company-tagged income for the current year',
-      path: 'tax.grossRevenue',
+      details: `Gross: ${eurFmt.format(revenue.gross)} | VAT: ${eurFmt.format(revenue.vat)}`,
+      path: 'tax.revenue.net',
     },
     {
-      label: 'Total Company Expenses',
-      value: `− ${eurFmt.format(companyExpenses)}`,
+      label: 'Company Expenses (Net)',
+      value: `− ${eurFmt.format(expenses.net)}`,
       info: 'All company-tagged withdrawals for the current year',
+      details: `Gross: ${eurFmt.format(expenses.gross)} | VAT: ${eurFmt.format(expenses.vat)}`,
       valueClass: 'text-negative',
-      path: 'tax.companyExpenses',
+      path: 'tax.expenses.net',
     },
     {
       label: 'Net Taxable Profit',
       value: eurFmt.format(netTaxableProfit),
-      info: 'Revenue − Expenses (floored at €0)',
+      info: 'Net Revenue − Net Expenses (floored at €0)',
       bold: true,
       path: 'tax.netTaxableProfit',
     },
@@ -59,10 +64,18 @@ export default function TaxBreakdown({ tax, netMonthlyIncome, onMetricClick }) {
           className={`tax-row ${onMetricClick ? 'clickable' : ''}`} 
           key={r.label}
           onClick={() => onMetricClick && onMetricClick({ path: r.path, label: r.label, format: 'currency' })}
+          style={r.details ? { alignItems: 'flex-start' } : {}}
         >
-          <span className="tax-row-label" title={r.info}>
-            {r.label}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span className="tax-row-label" title={r.info}>
+              {r.label}
+            </span>
+            {r.details && (
+              <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-secondary)', marginTop: '2px' }}>
+                {r.details}
+              </span>
+            )}
+          </div>
           <span
             className={`tax-row-value ${r.valueClass ?? ''} ${r.bold ? 'text-accent' : ''}`}
             style={r.bold ? { fontSize: 'var(--font-size-base)' } : {}}
@@ -71,6 +84,21 @@ export default function TaxBreakdown({ tax, netMonthlyIncome, onMetricClick }) {
           </span>
         </div>
       ))}
+
+      <div className="tax-divider" aria-hidden="true" />
+
+      {/* VAT Liability section */}
+      <div 
+        className={`tax-row ${onMetricClick ? 'clickable' : ''}`} 
+        onClick={() => onMetricClick && onMetricClick({ path: 'tax.vatLiability.total', label: 'VAT Liability', format: 'currency' })}
+      >
+        <span className="tax-row-label" title="VAT Collected − VAT Paid">
+          VAT Liability (Collected − Paid)
+        </span>
+        <span className={`tax-row-value ${vatLiability.total > 0 ? 'text-warning' : 'text-positive'}`}>
+          {eurFmt.format(vatLiability.total)}
+        </span>
+      </div>
 
       <div className="tax-divider" aria-hidden="true" />
 
@@ -100,7 +128,7 @@ export default function TaxBreakdown({ tax, netMonthlyIncome, onMetricClick }) {
       >
         <div>
           <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>
-            Expected Tax Total
+            Expected Tax Total (Income Tax + Business Tax)
           </div>
           <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--clr-text-secondary)', marginTop: 2 }}>
             Effective rate: {effectiveTaxRate.toFixed(1)}%
