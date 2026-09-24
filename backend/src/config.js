@@ -66,7 +66,7 @@ module.exports = {
     vatTag: process.env.VAT_TAG || 'ΦΠΑ',
     noVatTag: process.env.NO_VAT_TAG || 'No VAT',
     defaultVat: parseFloat(process.env.DEFAULT_VAT || '24'),
-    vatExpenseTags: (process.env.VAT_EXPANSE_TAG || process.env.VAT_EXPENSE_TAG || '').split(',').map(t => t.trim()).filter(Boolean),
+    vatExpenseTags: (process.env.VAT_EXPENSE_TAG || '').split(',').map(t => t.trim()).filter(Boolean),
   },
 
   projections: {
