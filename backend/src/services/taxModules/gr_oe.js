@@ -93,7 +93,13 @@ function calculate(context) {
   let vatPaidToGovt = 0;
   if (vatExpenseTags && vatExpenseTags.length > 0) {
     vatPaidToGovt = allJournals
-      .filter((j) => j.date.getFullYear() === currentYear && j.type === 'withdrawal' && j.tags && vatExpenseTags.every(tag => j.tags.includes(tag)))
+      .filter((j) => {
+        if (j.date.getFullYear() !== currentYear || j.type !== 'withdrawal' || !j.tags) return false;
+        // Check if every required tag is present in the transaction's tags (case/accent insensitive)
+        return vatExpenseTags.every(reqTag => 
+          j.tags.some(t => t.localeCompare(reqTag, undefined, { sensitivity: 'base' }) === 0)
+        );
+      })
       .reduce((acc, j) => acc + j.amount, 0);
   }
   const vatRemaining = vatLiability - vatPaidToGovt;
