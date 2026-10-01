@@ -15,8 +15,10 @@ export interface AuthStatus {
 export const loginSchema = z.object({ password: z.string().min(1).max(256) });
 
 export const setupSchema = z.object({
-  setupCode: z.string().trim().min(1),
+  setupCode: z.string().trim().min(1).max(32),
   password: passwordSchema,
+  /** The browser's IANA timezone, used as the initial setting. */
+  timezone: z.string().max(64).optional(),
 });
 
 export const changePasswordSchema = z.object({
