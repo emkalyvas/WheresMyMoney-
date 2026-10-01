@@ -1,0 +1,22 @@
+# Keep secrets and personal data out of the build context (and therefore out of images)
+.env
+.env.*
+data
+backend/data
+**/*.db
+**/*.db-*
+**/secret.key
+*.bundle
+
+# Not needed to build
+**/node_modules
+**/dist
+.git
+.github
+.vscode
+.idea
+docs
+backend
+frontend
+**/*.log
+**/test/fixtures/golden-*.json

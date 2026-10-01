@@ -1,0 +1,829 @@
+{
+  "now": "2026-01-03T07:30:00.000Z",
+  "until": "2026-01",
+  "output": {
+    "summary": {
+      "meanMonthlyExpenses": 1797.795199999999,
+      "meanMonthlyIncome": 6608.84,
+      "meanMonthlySurplus": 4811.0448000000015,
+      "medianMonthlyExpenses": 1860.3199999999997,
+      "medianMonthlyIncome": 6290,
+      "medianMonthlySurplus": 4397.150000000001,
+      "previousMeanMonthlyExpenses": 1830.038749999999,
+      "previousMeanMonthlyIncome": 6775.5,
+      "previousMeanMonthlySurplus": 4945.461250000001,
+      "previousMedianMonthlyExpenses": 1872.0049999999997,
+      "previousMedianMonthlyIncome": 6308,
+      "previousMedianMonthlySurplus": 4459.72,
+      "savingsRate": 72.79711416829582,
+      "totalMonths": 25,
+      "rolling90DayExpenses": 1759.9691666666668,
+      "rolling90DayIncome": 5875.148148148149,
+      "rolling90DaySurplus": 4115.178981481482,
+      "rolling180DayExpenses": 1688.7874074074082,
+      "rolling180DayIncome": 6135.37962962963
+    },
+    "surplus": {
+      "thisYear": 1585.05,
+      "projectedThisYear": 19020.6,
+      "previousYear": 62225.07000000001,
+      "difference": -43204.47000000001,
+      "growthPercent": -69.43257757685126
+    },
+    "yearOverYear": {
+      "incomeThisYear": 2609,
+      "projectedIncomeThisYear": 31308,
+      "incomePreviousYear": 83759,
+      "incomeGrowthPercent": -62.621330245107984,
+      "expensesThisYear": 1023.95,
+      "projectedExpensesThisYear": 12287.400000000001,
+      "expensesPreviousYear": 21533.929999999993,
+      "expensesGrowthPercent": -42.93935199009189,
+      "currentYear": 2026,
+      "previousYear": 2025
+    },
+    "monthOverMonth": {
+      "expensesCurrentMonth": 1023.95,
+      "incomeCurrentMonth": 2609,
+      "expensesPreviousMonth": 1860.3199999999997,
+      "currentMonthName": "2026-01",
+      "previousMonthName": "2025-12"
+    },
+    "tax": {
+      "enabled": true,
+      "description": "Greek OE Company Tax Calculation (CIT, Advance Tax, and Flat Business Tax).",
+      "grossRevenue": 0,
+      "companyExpenses": 0,
+      "revenue": {
+        "net": 0,
+        "gross": 0,
+        "vat": 0
+      },
+      "expenses": {
+        "net": 0,
+        "gross": 0,
+        "vat": 0
+      },
+      "vatLiability": {
+        "collected": 0,
+        "paid": 0,
+        "total": 0,
+        "paidToGovt": 0,
+        "remaining": 0
+      },
+      "netTaxableProfit": 0,
+      "expectedTaxTotal": -700.5,
+      "effectiveTaxRate": 0,
+      "breakdown": [
+        {
+          "label": "Corporate Income Tax (CIT)",
+          "value": 0,
+          "type": "warning",
+          "info": "CIT × 22%",
+          "path": "tax.breakdown[0].value"
+        },
+        {
+          "label": "Business Tax (Telos Epitidevmatos)",
+          "value": 800,
+          "type": "warning",
+          "info": "Flat annual fee",
+          "path": "tax.breakdown[1].value"
+        },
+        {
+          "label": "Advance Tax (Prokatavoli)",
+          "value": 0,
+          "type": "negative",
+          "info": "40% of CIT towards next year",
+          "path": "tax.breakdown[2].value"
+        },
+        {
+          "label": "Minus Previous Advance Tax",
+          "value": -1500.5,
+          "type": "positive",
+          "info": "Prepaid tax from 2025",
+          "path": "tax.breakdown[3].value"
+        }
+      ]
+    },
+    "netMonthlyIncome": {
+      "projected": 85227.5,
+      "monthly": 7102.291666666667,
+      "currentMonth": 1
+    },
+    "assets": {
+      "totalEur": 32314.62,
+      "totalLiabilitiesEur": 5200,
+      "netWorthEur": 27114.62,
+      "accounts": [
+        {
+          "id": "1",
+          "name": "Main Account",
+          "type": "asset",
+          "currency": "EUR",
+          "balance": 5234.12,
+          "balanceEur": 5234.12,
+          "exchangeRate": 1,
+          "allocationPct": 16.19737443918573
+        },
+        {
+          "id": "2",
+          "name": "Savings",
+          "type": "asset",
+          "currency": "EUR",
+          "balance": 12000,
+          "balanceEur": 12000,
+          "exchangeRate": 1,
+          "allocationPct": 37.13489436050927
+        },
+        {
+          "id": "3",
+          "name": "USD Account",
+          "type": "asset",
+          "currency": "USD",
+          "balance": 1500,
+          "balanceEur": 1380,
+          "exchangeRate": 0.92,
+          "allocationPct": 4.270512851458566
+        },
+        {
+          "id": "4",
+          "name": "Bitcoin Wallet",
+          "type": "asset",
+          "currency": "BTC",
+          "balance": 0.05,
+          "balanceEur": 2900,
+          "exchangeRate": 58000,
+          "allocationPct": 8.974266137123072
+        },
+        {
+          "id": "5",
+          "name": "Cardano Wallet",
+          "type": "asset",
+          "currency": "ADA",
+          "balance": 3000,
+          "balanceEur": 1350,
+          "exchangeRate": 0.45,
+          "allocationPct": 4.177675615557293
+        },
+        {
+          "id": "t212_cash",
+          "name": "Uninvested Cash (Trading212)",
+          "type": "asset",
+          "currency": "EUR",
+          "balance": 250.5,
+          "balanceEur": 250.5,
+          "exchangeRate": 1,
+          "allocationPct": 0.775190919775631
+        },
+        {
+          "id": "t212_VWCE",
+          "name": "Vanguard FTSE All-World (Trading212)",
+          "ticker": "VWCE",
+          "type": "asset",
+          "currency": "EUR",
+          "balance": 70,
+          "balanceEur": 8000,
+          "exchangeRate": 1,
+          "allocationPct": 24.756596240339512
+        },
+        {
+          "id": "t212_AAPL",
+          "name": "Apple (Trading212)",
+          "ticker": "AAPL",
+          "type": "asset",
+          "currency": "EUR",
+          "balance": 6,
+          "balanceEur": 1200,
+          "exchangeRate": 1,
+          "allocationPct": 3.713489436050927
+        }
+      ],
+      "liabilities": [
+        {
+          "id": "20",
+          "name": "Car Loan",
+          "type": "liabilities",
+          "currency": "EUR",
+          "balance": -4000,
+          "balanceEur": -4000,
+          "exchangeRate": 1
+        },
+        {
+          "id": "21",
+          "name": "Φόρος Εισοδήματος 2025",
+          "type": "liabilities",
+          "currency": "EUR",
+          "balance": -1200,
+          "balanceEur": -1200,
+          "exchangeRate": 1
+        }
+      ],
+      "totalBtc": 0.05,
+      "totalBtcEur": 2900,
+      "totalAda": 3000,
+      "totalAdaEur": 1350,
+      "totalInvestedEur": 13450,
+      "investedStocks": [
+        {
+          "name": "Vanguard FTSE All-World",
+          "ticker": "VWCE",
+          "balance": 70,
+          "balanceEur": 8000
+        },
+        {
+          "name": "Apple",
+          "ticker": "AAPL",
+          "balance": 6,
+          "balanceEur": 1200
+        }
+      ]
+    },
+    "categories": {
+      "expenses": [
+        {
+          "name": "Housing",
+          "total": 22500,
+          "monthlyMean": 900,
+          "monthlyMedian": 900,
+          "transactionCount": 25,
+          "currentMonthAmount": 900,
+          "previousMonthAmount": 900,
+          "previousMonthlyMean": 900,
+          "previousMonthlyMedian": 900,
+          "currentRank": 1,
+          "previousRank": 1,
+          "rankChange": 0
+        },
+        {
+          "name": "Groceries",
+          "total": 9323,
+          "monthlyMean": 372.92,
+          "monthlyMedian": 375.63,
+          "transactionCount": 97,
+          "currentMonthAmount": 123.95,
+          "previousMonthAmount": 368.84000000000003,
+          "previousMonthlyMean": 383.29375,
+          "previousMonthlyMedian": 376.74,
+          "currentRank": 2,
+          "previousRank": 2,
+          "rankChange": 0
+        },
+        {
+          "name": "Taxes",
+          "total": 3483,
+          "monthlyMean": 139.32,
+          "monthlyMedian": 0,
+          "transactionCount": 7,
+          "currentMonthAmount": 0,
+          "previousMonthAmount": 0,
+          "previousMonthlyMean": 145.125,
+          "previousMonthlyMedian": 0,
+          "currentRank": null,
+          "previousRank": null,
+          "rankChange": null
+        },
+        {
+          "name": "Equipment",
+          "total": 2533.14,
+          "monthlyMean": 101.3256,
+          "monthlyMedian": 0,
+          "transactionCount": 12,
+          "currentMonthAmount": 0,
+          "previousMonthAmount": 292.34,
+          "previousMonthlyMean": 105.5475,
+          "previousMonthlyMedian": 60.375,
+          "currentRank": null,
+          "previousRank": 3,
+          "rankChange": null
+        },
+        {
+          "name": "Utilities",
+          "total": 2444.89,
+          "monthlyMean": 97.7956,
+          "monthlyMedian": 102.44,
+          "transactionCount": 24,
+          "currentMonthAmount": 0,
+          "previousMonthAmount": 95.68,
+          "previousMonthlyMean": 101.87041666666666,
+          "previousMonthlyMedian": 103.03,
+          "currentRank": null,
+          "previousRank": 5,
+          "rankChange": null
+        },
+        {
+          "name": "Transport",
+          "total": 1753.3199999999997,
+          "monthlyMean": 70.13279999999999,
+          "monthlyMedian": 69.1,
+          "transactionCount": 24,
+          "currentMonthAmount": 0,
+          "previousMonthAmount": 98.6,
+          "previousMonthlyMean": 73.05499999999999,
+          "previousMonthlyMedian": 70.53,
+          "currentRank": null,
+          "previousRank": 4,
+          "rankChange": null
+        },
+        {
+          "name": "Eating Out",
+          "total": 1479.61,
+          "monthlyMean": 59.1844,
+          "monthlyMedian": 57.77,
+          "transactionCount": 18,
+          "currentMonthAmount": 0,
+          "previousMonthAmount": 55.26,
+          "previousMonthlyMean": 61.650416666666665,
+          "previousMonthlyMedian": 58.59,
+          "currentRank": null,
+          "previousRank": 6,
+          "rankChange": null
+        },
+        {
+          "name": "Software",
+          "total": 1190.4,
+          "monthlyMean": 47.61600000000001,
+          "monthlyMedian": 49.6,
+          "transactionCount": 24,
+          "currentMonthAmount": 0,
+          "previousMonthAmount": 49.6,
+          "previousMonthlyMean": 49.6,
+          "previousMonthlyMedian": 49.6,
+          "currentRank": null,
+          "previousRank": 7,
+          "rankChange": null
+        },
+        {
+          "name": "Uncategorized",
+          "total": 237.52,
+          "monthlyMean": 9.5008,
+          "monthlyMedian": 0,
+          "transactionCount": 6,
+          "currentMonthAmount": 0,
+          "previousMonthAmount": 0,
+          "previousMonthlyMean": 9.896666666666667,
+          "previousMonthlyMedian": 0,
+          "currentRank": null,
+          "previousRank": null,
+          "rankChange": null
+        }
+      ],
+      "income": [
+        {
+          "name": "Consulting",
+          "total": 101139,
+          "monthlyMean": 4045.56,
+          "monthlyMedian": 3692,
+          "transactionCount": 50,
+          "currentMonthAmount": 0,
+          "previousMonthAmount": 3467,
+          "previousMonthlyMean": 4214.125,
+          "previousMonthlyMedian": 3716,
+          "currentRank": null,
+          "previousRank": 1,
+          "rankChange": null
+        },
+        {
+          "name": "Salary",
+          "total": 64082,
+          "monthlyMean": 2563.28,
+          "monthlyMedian": 2678,
+          "transactionCount": 24,
+          "currentMonthAmount": 2609,
+          "previousMonthAmount": 2563,
+          "previousMonthlyMean": 2561.375,
+          "previousMonthlyMedian": 2683.5,
+          "currentRank": 1,
+          "previousRank": 2,
+          "rankChange": 1
+        }
+      ],
+      "topExpense": {
+        "name": "Housing",
+        "total": 22500,
+        "monthlyMean": 900,
+        "monthlyMedian": 900,
+        "transactionCount": 25,
+        "currentMonthAmount": 900,
+        "previousMonthAmount": 900,
+        "previousMonthlyMean": 900,
+        "previousMonthlyMedian": 900,
+        "currentRank": 1,
+        "previousRank": 1,
+        "rankChange": 0
+      },
+      "expenses90d": [
+        {
+          "name": "Housing",
+          "total": 2700,
+          "monthlyMean": 912.5,
+          "transactionCount": 3
+        },
+        {
+          "name": "Groceries",
+          "total": 998.65,
+          "monthlyMean": 337.5067129629629,
+          "transactionCount": 11
+        },
+        {
+          "name": "Taxes",
+          "total": 320,
+          "monthlyMean": 108.14814814814815,
+          "transactionCount": 1
+        },
+        {
+          "name": "Equipment",
+          "total": 292.34,
+          "monthlyMean": 98.80009259259259,
+          "transactionCount": 1
+        },
+        {
+          "name": "Utilities",
+          "total": 275.18,
+          "monthlyMean": 93.00064814814816,
+          "transactionCount": 3
+        },
+        {
+          "name": "Transport",
+          "total": 258.53,
+          "monthlyMean": 87.3735648148148,
+          "transactionCount": 3
+        },
+        {
+          "name": "Eating Out",
+          "total": 190.89999999999998,
+          "monthlyMean": 64.51712962962962,
+          "transactionCount": 2
+        },
+        {
+          "name": "Software",
+          "total": 148.8,
+          "monthlyMean": 50.2888888888889,
+          "transactionCount": 3
+        },
+        {
+          "name": "Uncategorized",
+          "total": 23.18,
+          "monthlyMean": 7.833981481481481,
+          "transactionCount": 1
+        }
+      ],
+      "income90d": [
+        {
+          "name": "Consulting",
+          "total": 9425,
+          "monthlyMean": 3185.300925925926,
+          "transactionCount": 5
+        },
+        {
+          "name": "Salary",
+          "total": 7959,
+          "monthlyMean": 2689.8472222222226,
+          "transactionCount": 3
+        }
+      ],
+      "topExpense90d": {
+        "name": "Housing",
+        "total": 2700,
+        "monthlyMean": 912.5,
+        "transactionCount": 3
+      }
+    },
+    "monthlyData": [
+      {
+        "month": "2024-01",
+        "income": 3863,
+        "expenses": 1648.0399999999997,
+        "surplus": 2214.96
+      },
+      {
+        "month": "2024-02",
+        "income": 4865,
+        "expenses": 1700.0999999999997,
+        "surplus": 3164.9000000000005
+      },
+      {
+        "month": "2024-03",
+        "income": 5432,
+        "expenses": 1542.7,
+        "surplus": 3889.3
+      },
+      {
+        "month": "2024-04",
+        "income": 8695,
+        "expenses": 2363.0699999999997,
+        "surplus": 6331.93
+      },
+      {
+        "month": "2024-05",
+        "income": 6370,
+        "expenses": 1972.8499999999997,
+        "surplus": 4397.150000000001
+      },
+      {
+        "month": "2024-06",
+        "income": 5544,
+        "expenses": 1883.6899999999996,
+        "surplus": 3660.3100000000004
+      },
+      {
+        "month": "2024-07",
+        "income": 4509,
+        "expenses": 2071.7299999999996,
+        "surplus": 2437.2700000000004
+      },
+      {
+        "month": "2024-08",
+        "income": 8676,
+        "expenses": 1501.08,
+        "surplus": 7174.92
+      },
+      {
+        "month": "2024-09",
+        "income": 6290,
+        "expenses": 1767.71,
+        "surplus": 4522.29
+      },
+      {
+        "month": "2024-10",
+        "income": 11191,
+        "expenses": 2111.2799999999997,
+        "surplus": 9079.720000000001
+      },
+      {
+        "month": "2024-11",
+        "income": 3929,
+        "expenses": 1889.73,
+        "surplus": 2039.27
+      },
+      {
+        "month": "2024-12",
+        "income": 9489,
+        "expenses": 1935.02,
+        "surplus": 7553.98
+      },
+      {
+        "month": "2025-01",
+        "income": 9299,
+        "expenses": 1990.6399999999999,
+        "surplus": 7308.360000000001
+      },
+      {
+        "month": "2025-02",
+        "income": 4616,
+        "expenses": 1461.1,
+        "surplus": 3154.9
+      },
+      {
+        "month": "2025-03",
+        "income": 7848,
+        "expenses": 1941.2600000000002,
+        "surplus": 5906.74
+      },
+      {
+        "month": "2025-04",
+        "income": 5650,
+        "expenses": 2359.85,
+        "surplus": 3290.15
+      },
+      {
+        "month": "2025-05",
+        "income": 9751,
+        "expenses": 1823.37,
+        "surplus": 7927.63
+      },
+      {
+        "month": "2025-06",
+        "income": 9145,
+        "expenses": 1826.0899999999997,
+        "surplus": 7318.91
+      },
+      {
+        "month": "2025-07",
+        "income": 8534,
+        "expenses": 2026.44,
+        "surplus": 6507.5599999999995
+      },
+      {
+        "month": "2025-08",
+        "income": 5132,
+        "expenses": 1300,
+        "surplus": 3832
+      },
+      {
+        "month": "2025-09",
+        "income": 6456,
+        "expenses": 1472.8799999999997,
+        "surplus": 4983.120000000001
+      },
+      {
+        "month": "2025-10",
+        "income": 4972,
+        "expenses": 1952.62,
+        "surplus": 3019.38
+      },
+      {
+        "month": "2025-11",
+        "income": 6326,
+        "expenses": 1519.3600000000001,
+        "surplus": 4806.639999999999
+      },
+      {
+        "month": "2025-12",
+        "income": 6030,
+        "expenses": 1860.3199999999997,
+        "surplus": 4169.68
+      },
+      {
+        "month": "2026-01",
+        "income": 2609,
+        "expenses": 1023.95,
+        "surplus": 1585.05
+      }
+    ],
+    "runway": {
+      "months": 18.36090120897004,
+      "liquidMonths": 10.718721871547938,
+      "totalAssetsEur": 32314.62,
+      "totalCashEur": 18864.62,
+      "basisExpenses": 1759.9691666666668
+    },
+    "projections": {
+      "data": [
+        {
+          "year": 2026,
+          "fullSurplusAssets": 32314.62,
+          "configuredAmountAssets": 32314.62
+        },
+        {
+          "year": 2027,
+          "fullSurplusAssets": 90988.6576,
+          "configuredAmountAssets": 39256.119999999995
+        },
+        {
+          "year": 2028,
+          "fullSurplusAssets": 153769.87783200003,
+          "configuredAmountAssets": 46683.525
+        },
+        {
+          "year": 2029,
+          "fullSurplusAssets": 220945.78348024006,
+          "configuredAmountAssets": 54630.84835
+        },
+        {
+          "year": 2030,
+          "fullSurplusAssets": 292824.0025238569,
+          "configuredAmountAssets": 63134.48433450001
+        },
+        {
+          "year": 2031,
+          "fullSurplusAssets": 369733.69690052693,
+          "configuredAmountAssets": 72233.374837915
+        },
+        {
+          "year": 2032,
+          "fullSurplusAssets": 452027.0698835639,
+          "configuredAmountAssets": 81969.18767656907
+        },
+        {
+          "year": 2033,
+          "fullSurplusAssets": 540080.9789754135,
+          "configuredAmountAssets": 92386.5074139289
+        },
+        {
+          "year": 2034,
+          "fullSurplusAssets": 634298.6617036924,
+          "configuredAmountAssets": 103533.03953290393
+        },
+        {
+          "year": 2035,
+          "fullSurplusAssets": 735111.582222951,
+          "configuredAmountAssets": 115459.82890020721
+        },
+        {
+          "year": 2036,
+          "fullSurplusAssets": 842981.4071785576,
+          "configuredAmountAssets": 128221.49352322172
+        },
+        {
+          "year": 2037,
+          "fullSurplusAssets": 958402.1198810567,
+          "configuredAmountAssets": 141876.47466984726
+        },
+        {
+          "year": 2038,
+          "fullSurplusAssets": 1081902.2824727308,
+          "configuredAmountAssets": 156487.3044967366
+        },
+        {
+          "year": 2039,
+          "fullSurplusAssets": 1214047.456445822,
+          "configuredAmountAssets": 172120.89241150816
+        },
+        {
+          "year": 2040,
+          "fullSurplusAssets": 1355442.7925970296,
+          "configuredAmountAssets": 188848.83148031373
+        },
+        {
+          "year": 2041,
+          "fullSurplusAssets": 1506735.8022788216,
+          "configuredAmountAssets": 206747.7262839357
+        },
+        {
+          "year": 2042,
+          "fullSurplusAssets": 1668619.3226383391,
+          "configuredAmountAssets": 225899.54372381122
+        },
+        {
+          "year": 2043,
+          "fullSurplusAssets": 1841834.6894230228,
+          "configuredAmountAssets": 246391.98838447803
+        },
+        {
+          "year": 2044,
+          "fullSurplusAssets": 2027175.1318826345,
+          "configuredAmountAssets": 268318.9041713915
+        },
+        {
+          "year": 2045,
+          "fullSurplusAssets": 2225489.405314419,
+          "configuredAmountAssets": 291780.7040633889
+        },
+        {
+          "year": 2046,
+          "fullSurplusAssets": 2437685.6778864283,
+          "configuredAmountAssets": 316884.82994782616
+        },
+        {
+          "year": 2047,
+          "fullSurplusAssets": 2664735.6895384784,
+          "configuredAmountAssets": 343746.244644174
+        },
+        {
+          "year": 2048,
+          "fullSurplusAssets": 2907679.202006172,
+          "configuredAmountAssets": 372487.9583692662
+        },
+        {
+          "year": 2049,
+          "fullSurplusAssets": 3167628.760346604,
+          "configuredAmountAssets": 403241.59205511486
+        },
+        {
+          "year": 2050,
+          "fullSurplusAssets": 3445774.7877708664,
+          "configuredAmountAssets": 436147.9800989729
+        },
+        {
+          "year": 2051,
+          "fullSurplusAssets": 3743391.037114827,
+          "configuredAmountAssets": 471357.81530590105
+        },
+        {
+          "year": 2052,
+          "fullSurplusAssets": 4061840.423912865,
+          "configuredAmountAssets": 509032.3389773141
+        },
+        {
+          "year": 2053,
+          "fullSurplusAssets": 4402581.267786766,
+          "configuredAmountAssets": 549344.0793057261
+        },
+        {
+          "year": 2054,
+          "fullSurplusAssets": 4767173.9707318405,
+          "configuredAmountAssets": 592477.6414571269
+        },
+        {
+          "year": 2055,
+          "fullSurplusAssets": 5157288.16288307,
+          "configuredAmountAssets": 638630.5529591258
+        },
+        {
+          "year": 2056,
+          "fullSurplusAssets": 5574710.348484886,
+          "configuredAmountAssets": 688014.1682662647
+        }
+      ],
+      "targetGoal": 1000000,
+      "retirementTarget": 527990.75,
+      "safeAnnualWithdrawal": 538,
+      "safeMonthlyWithdrawal": 44.833333333333336,
+      "investmentGrowthRate": 0.07,
+      "monthlyInvestmentAmount": 500,
+      "milestones": {
+        "retirementYearFullSurplus": 2033,
+        "retirementYearConfiguredAmount": 2053,
+        "targetYearFullSurplus": 2038,
+        "targetYearConfiguredAmount": null
+      }
+    },
+    "meta": {
+      "lastUpdated": "2026-01-03T07:30:00.000Z",
+      "dataStartDate": "2024-01-01",
+      "currentMonth": 1,
+      "currentYear": 2026,
+      "totalMonths": 25
+    }
+  }
+}

@@ -1,11 +1,40 @@
 {
-  "name": "wheresmymoney-root",
-  "version": "1.0.0",
+  "name": "wheresmymoney",
+  "version": "2.0.0-dev",
   "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build",
-    "start": "docker compose up --build",
-    "stop": "docker compose down",
-    "logs": "docker compose logs -f"
+    "dev": "npm run dev --workspace @wmm/server & npm run dev --workspace @wmm/web; wait",
+    "dev:mock": "npm run mock:firefly --workspace @wmm/server",
+    "build": "npm run build --workspace @wmm/web && npm run build --workspace @wmm/server",
+    "start": "npm run start --workspace @wmm/server",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.9.9",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.71.0"
+  },
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true,
+    "esbuild@0.27.7": true,
+    "esbuild@0.28.2": true
   }
 }
