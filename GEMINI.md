@@ -1,71 +1,28 @@
-# WheresMyMoney! - Project Overview & Context
+# WheresMyMoney! — project context for AI assistants
 
-WheresMyMoney! is a comprehensive financial dashboard and reporting tool designed to aggregate transaction data from **Firefly III** and external data sources (like **Trading 212**) to compute essential economic statistics. It is tailored for freelancers and small businesses to visualize financial health, automate tax calculations, and project future wealth.
+Self-hosted dashboard for Firefly III data (plus Trading 212): net worth, cash flow, categories, Greek OE company tax and VAT, projections, PDF reports. See README.md for features, docs/MIGRATING.md for v1 → v2.
 
-## 🏗 Architecture & Core Technologies
+## Layout (npm workspaces, TypeScript everywhere)
 
-### Tech Stack
-- **Frontend:** React 18 (with Vite), Recharts for data visualization, and Lucide React for iconography.
-- **Backend:** Node.js, Express, Axios (API requests), SQLite (local caching), Puppeteer (PDF generation), Node-cron, and Nodemailer (scheduling/email).
-- **Deployment:** Fully containerized with Docker and Docker Compose.
+- `packages/shared`: zod settings schema (`settings.ts`), statistics payload types (`statistics.ts`), API types, metric allow-list, projection maths. Imported as TS source by both apps.
+- `apps/server`: Fastify 5, better-sqlite3, pino.
+  - `src/calc/`: the calculator (pure). Its output must keep every v1 field: `test/calculator.golden.test.ts` compares against v1 output for a synthetic dataset.
+  - `src/tax/`: tax modules (`gr-oe.ts`); register new ones in `tax/index.ts` and `TAX_MODULES`.
+  - `src/sync/`: sync worker (one job at a time), snapshot store, data-health checks.
+  - `src/settings/`: settings store, AES-GCM secrets (write-only via the API), one-time v1 `.env` importer.
+  - `src/auth/`: scrypt passwords, hashed sessions (cookie for the browser, bearer for integrations), CSRF header check.
+  - `src/reports/`: PDF via @react-pdf/renderer, mailer, minute-tick scheduler; server-side strings in `strings.ts`.
+  - `test/mock-firefly.ts`: fake Firefly III with synthetic data.
+- `apps/web`: React 19, Vite, Tailwind CSS v4 (tokens in `src/styles.css`), React Router 7, TanStack Query, react-hook-form + zod, Recharts, i18next (`src/i18n/en.ts`, typed keys).
 
-### Key Backend Services (`backend/src/services/`)
-- **`calculator.js`**: The core "brain" of the application. It processes raw transaction data, applies tax rules, and computes all statistics (means, year-over-year growth, projections).
-- **`firefly.js`**: Service for interacting with the Firefly III API.
-- **`dataSources/`**: Pluggable architecture for external data. Currently includes `trading212.js`.
-- **`db.js` & `cacheWorker.js`**: Manages a local SQLite database and a background worker that periodically recalculates statistics to ensure the dashboard loads instantly.
-- **`pdfGenerator.js`**: Uses Puppeteer to render the frontend and print it to a PDF report.
-- **`reportScheduler.js`**: Handles the monthly cron job for generating and emailing reports.
+## Conventions
 
-### Key Frontend Components (`frontend/src/components/`)
-- **`Dashboard.jsx`**: The main layout aggregating all data visualization cards.
-- **`StatCard.jsx`**: A generic component for displaying single-metric highlights.
-- **`MonthlyChart.jsx`**: Visualizes monthly income vs. expenses trends.
-- **`TaxBreakdown.jsx`**: Displays detailed tax estimations and effective rates.
-- **`ProjectionCard.jsx`**: Shows long-term wealth projections and retirement milestones.
+- Configuration lives in the database, not in env vars (only PORT, DATA_DIR, WMM_SECRET_KEY, TRUST_PROXY, LOG_LEVEL, WEB_DIR).
+- Never log or return secrets, hostnames or amounts in errors; upstream errors are `UpstreamError` with a reason code.
+- `/api/auth/login`, `/api/statistics*` and `/api/report/pdf` are a public contract (TimologioPlus): don't change their shapes.
+- Amounts in the UI go through `<Money>` (blurred in privacy mode); account names through `<Private>`.
+- All user-facing strings go through i18n.
 
----
+## Commands
 
-## 🚀 Building and Running
-
-### Development Mode (with Hot Reloading)
-To start the project in development mode with hot-reloading for both backend and frontend:
-```bash
-npm run dev
-```
-*This uses `docker-compose.dev.yml` to mount local source code into the containers.*
-
-### Production Deployment
-To build and start the production containers:
-```bash
-docker-compose up -d --build
-```
-
-### Accessing the Application
-- **Frontend:** `http://localhost:3000`
-- **Backend API:** `http://localhost:3001`
-- **Health Check:** `http://localhost:3001/health`
-
----
-
-## 🛠 Development Conventions
-
-### 1. Data Source Extension
-To add a new data source:
-1. Create a new file in `backend/src/services/dataSources/`.
-2. Export a function that fetches and maps data to the common `assetList` structure.
-3. Register the new source in `backend/src/services/dataSources/index.js`.
-
-### 2. Environment Variables
-Configuration is strictly handled via environment variables. See `.env.example` for the full list of supported variables, including tax rates, company tags, and API credentials.
-
-### 3. Caching & Background Work
-The backend does not compute statistics on every request. It relies on a cached payload in the SQLite database. If you make changes to the calculation logic in `calculator.js`, you may need to wait for the next `cacheWorker` cycle (defined by `STATISTICS_CACHE_TTL_MINUTES`) or restart the backend to see the changes.
-
-### 4. PDF Reporting
-The PDF generator navigates to the frontend dashboard. Ensure any new UI components render correctly within a headless Chrome environment and do not depend on interactive states for their initial data visualization.
-
----
-
-## 🧪 Testing
-*(TODO: Add specific testing instructions once test suites are implemented. Currently, testing is primarily performed via manual verification in the dev environment.)*
+`npm run dev:mock`, `npm run dev`, `npm test`, `npm run typecheck`, `docker compose up -d --build`.

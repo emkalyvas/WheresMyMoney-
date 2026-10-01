@@ -1,4 +1,5 @@
-// One-off: runs the v1 calculator (backend/src/services/calculator.js) against the
+// One-off: runs the v1 calculator (backend/src/services/calculator.js, removed in v2;
+// check out commit 6c0fd0f to regenerate) against the
 // synthetic dataset and writes its output as golden files. The v2 calculator must
 // reproduce these results. Run with: TZ=Europe/Athens node make-golden.cjs
 'use strict';

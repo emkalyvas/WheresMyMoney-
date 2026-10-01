@@ -1,0 +1,4 @@
+# False positives: variable names followed by another line, not secrets
+5ff3eb2c97118b93be6c7f3ed971b19e41889846:apps/server/src/settings/env-import.ts:generic-api-key:29
+5ff3eb2c97118b93be6c7f3ed971b19e41889846:apps/server/src/settings/env-import.ts:generic-api-key:33
+5232dc8b728f359b3be62a0dac390e675c12c6f6:.env.example:generic-api-key:38

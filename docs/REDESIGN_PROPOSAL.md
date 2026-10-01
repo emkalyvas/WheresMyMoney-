@@ -1,6 +1,9 @@
 # WheresMyMoney! v2: Redesign Proposal
 
-Branch: `redesign/v2` · Status: **proposal, nothing implemented yet**
+Branch: `redesign/v2` · Status: **implemented on this branch** (2026-10-01)
+
+> **Decisions taken:** TypeScript ✔ · Tailwind ✔ · single container ✔ · English UI with i18n ✔ · git history purged ✔.
+> **Changes from this proposal:** PDF reports use `@react-pdf/renderer` on the server (no Chromium at all, instead of an optional image variant); the HTML export was dropped; PATs for integrations were not added because TimologioPlus logs in with the password, which keeps working (`/api/auth/login` returns a bearer token). How to upgrade: [MIGRATING.md](MIGRATING.md).
 
 This document reviews the current codebase (as of `9462f13`) and proposes a rewrite in phases. The goals:
 

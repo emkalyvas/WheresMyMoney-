@@ -25,7 +25,7 @@ export function AccountsEditor({ inline, onSaved }: { inline?: boolean; onSaved?
     if (q.data) setRules(q.data.rules);
   }, [q.data]);
 
-  const accounts = q.data?.accounts ?? [];
+  const accounts = useMemo(() => q.data?.accounts ?? [], [q.data]);
   const known = useMemo(() => new Set(accounts.map((a) => a.name.toLowerCase())), [accounts]);
   const orphanRules = Object.keys(rules).filter((n) => !known.has(n.toLowerCase()));
   const dirty = q.data ? JSON.stringify(normalise(rules)) !== JSON.stringify(normalise(q.data.rules)) : false;

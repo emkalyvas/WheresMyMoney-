@@ -1,95 +1,87 @@
 # WheresMyMoney!
 
-WheresMyMoney! is a full-stack financial dashboard and reporting tool designed to aggregate transaction data from your **Firefly III** instance and compute essential economic statistics. It provides a beautiful, unified view of your assets, income, expenses, and automated tax calculations, tailored specifically for freelancers and small businesses.
+A private, self-hosted dashboard for your finances in **Firefly III**: net worth, cash flow, categories, company taxes and VAT, long-term projections and monthly PDF reports — at a glance.
 
-## ✨ Features
+- **Overview** — net worth with trend, income/spending/savings rate/runway for any period, this month vs. a typical month
+- **Cash flow** — monthly history and category breakdowns for this month, 90 days, YTD, 12 months or all time
+- **Net worth** — history, allocation (cash / investments / crypto), accounts and holdings; multi-currency and crypto via exchange rates
+- **Business & tax** — company income tax, business tax, advance tax and VAT position from tagged transactions (Greek OE module included)
+- **Planning** — compound-growth projections with what-if sliders and financial-independence milestones
+- **Reports** — PDF report on demand or e-mailed monthly
+- **Data health** — checks that your Firefly III data follows the conventions the calculations rely on, with links to the offending transactions
+- **Trading 212** — invested positions and cash from one or more accounts
 
-- **Firefly III Integration:** Directly connects to your Firefly III API to pull live financial data.
-- **Extensible External Data Sources:** Integrates with external APIs (currently includes **Trading 212**) to fetch invested assets and cash, extending your financial snapshot beyond Firefly III.
-- **Account Filtering:** Ability to selectively ignore specific Firefly III accounts from the global calculations by their names.
-- **Economic Statistics Dashboard:** Visualizes your financial health with interactive charts for category breakdowns, monthly trends, and overall asset overviews.
-- **Automated Tax & Business Calculations:** Automatically computes estimated income tax, advance tax, and standard business expenses based on configurable rates.
-- **Smart Data Caching:** Employs a local SQLite caching layer and background worker to automatically fetch and calculate statistics, providing near-instantaneous load times on the dashboard.
-- **PDF Report Generation:** Built-in engine utilizing Puppeteer to capture your dashboard and generate sleek, professional PDF reports on demand.
-- **Scheduled Email Reporting:** Configurable monthly scheduler to automatically generate and email your financial summary as a PDF attachment.
-- **Docker Ready:** Fully containerized with a simple `docker-compose.yml` for effortless deployment, plus a dedicated `docker-compose.dev.yml` for hot-reloading development.
+Every number can be opened to see its history, built from daily snapshots.
 
-## 🛠 Tech Stack
+## Privacy & security
 
-- **Frontend:** React 18, Vite, Recharts (for data visualization), Lucide React (for iconography).
-- **Backend:** Node.js, Express, Axios (for Firefly III API requests), Puppeteer (for PDF generation), Node-cron & Nodemailer (for scheduling and sending emails).
-- **Deployment:** Docker & Docker Compose.
+- Password protection is always on (scrypt-hashed); sessions use httpOnly, SameSite=Strict cookies; login is rate-limited
+- Tokens, API keys and the SMTP password are **encrypted at rest** and never sent back to the browser
+- One origin, no CORS, strict Content-Security-Policy, no third-party fonts or scripts
+- **Privacy mode** (press <kbd>P</kbd>) blurs every amount and account name — handy when screen-sharing
+- Logs and error messages never contain hostnames, tokens or amounts
 
-## ⚙️ Prerequisites
-
-To run WheresMyMoney!, you will need:
-- An active [Firefly III](https://www.firefly-iii.org/) instance with a generated Personal Access Token.
-- Docker and Docker Compose installed (for production/standard deployment).
-- Node.js 18+ (if running locally for development).
-
-## 🔧 Environment Variables
-
-Configuration is handled entirely via environment variables. Create a `.env` file in the root directory (you can use `.env.example` as a template).
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `FIREFLY_API_URL` | The URL of your Firefly III instance | `http://localhost:8080` |
-| `FIREFLY_TOKEN` | Your Firefly III Personal Access Token | Required |
-| `BACKEND_PORT` | Port for the backend API | `3001` |
-| `FRONTEND_PORT` | Port for the frontend interface | `3000` |
-| `COMPANY_TAG` | Firefly III tag to identify company/business transactions | `MnApps` |
-| `START_DATE` | Date from which to begin calculating statistics | `2024-01-01` |
-| `INCOME_TAX_RATE` | Estimated income tax rate | `0.22` |
-| `BUSINESS_TAX` | Standard fixed business tax/expenses | `800` |
-| `ADVANCE_TAX_RATE`| Rate for advance tax calculations | `0.40` |
-| `SMTP_HOST` | SMTP server for automated emails | |
-| `SMTP_PORT` | SMTP port | |
-| `SMTP_SECURE` | Use secure SMTP (true/false) | `false` |
-| `SMTP_USER` | SMTP username | |
-| `SMTP_PASS` | SMTP password | |
-| `SMTP_FROM` | Sender email address for reports | |
-| `REPORT_EMAILS` | Comma-separated list of recipient emails for reports | |
-| `REPORT_SCHEDULE_DAY` | Day of the month to send the scheduled report | `1` |
-| `REPORT_SCHEDULE_TIME`| Time of day to send the scheduled report (HH:MM) | `08:00` |
-| `IGNORE_FIREFLY_ACCOUNTS` | Comma-separated list of account names to ignore from Firefly III calculations | |
-| `TRADING212_API_KEY` | Your Trading 212 API Key | |
-| `TRADING212_API_SECRET` | Your Trading 212 API Secret | |
-| `TRADING212_ENV` | Trading 212 Environment (`live` or `demo`) | `live` |
-| `STATISTICS_CACHE_TTL_MINUTES` | How often the background worker recalculates statistics (in minutes) | `15` |
-
-## 🚀 Getting Started
-
-### Using Docker (Recommended)
-
-1. Clone the repository and navigate into the project directory.
-2. Create your `.env` file and populate it with your Firefly III credentials and configuration.
-3. Run the following command:
+## Quick start (Docker)
 
 ```bash
-docker-compose up -d --build
+git clone https://github.com/emkalyvas/WheresMyMoney-.git && cd WheresMyMoney-
+docker compose up -d --build
+docker compose logs wheresmymoney | grep "setup code"
 ```
 
-The application will be available at:
-- **Frontend Dashboard:** `http://localhost:3000`
-- **Backend API:** `http://localhost:3001`
+Open `http://localhost:3000`, enter the setup code from the logs, choose a password, and the wizard walks you through connecting Firefly III (URL + personal access token), choosing accounts and (optionally) taxes.
 
-### Local Development (Hot Reloading)
+Upgrading from v1 (`.env` configuration)? Read **[docs/MIGRATING.md](docs/MIGRATING.md)** — settings, password and history are imported automatically.
 
-WheresMyMoney! comes with a dedicated Docker development mode that provides instant hot-reloading for both the frontend (Vite HMR) and backend (Nodemon) without needing to rebuild containers.
+### Configuration
 
-1. Create your `.env` file based on `.env.example`.
-2. From the root project directory, use the helper script:
+Everything is configured in the app (**Settings**). The few optional bootstrap variables are listed in [.env.example](.env.example): port, data directory, encryption key, trusted proxies.
+
+Put WheresMyMoney! behind your reverse proxy with HTTPS if you expose it beyond your LAN.
+
+## Firefly III conventions
+
+| What | How |
+|------|-----|
+| Exclude an account | Turn it off in Settings → Accounts, or untick "Include in net worth" in Firefly III |
+| Account type (cash / investment / crypto) | Automatic (non-ISO currencies count as crypto), override in Settings → Accounts |
+| Company transactions | Tag them with the company tag (Settings → Business & tax) |
+| VAT rate of a transaction | Tag `<prefix> <rate>`, e.g. `ΦΠΑ 13`; the no-VAT tag means 0 %; otherwise the default rate |
+| VAT paid to the tax office | A withdrawal carrying all "VAT payment tags" (case/accent-insensitive) |
+| Prepaid advance tax | A liability account named after the configured pattern (e.g. `Φόρος Εισοδήματος 2025`) with `Προκαταβολή: 1500.50` in its notes |
+
+The **Data health** page checks these for you.
+
+## API for integrations
+
+`POST /api/auth/login` with `{"password": "…"}` returns `{"success": true, "token": "…"}`; send it as `Authorization: Bearer <token>` to `GET /api/statistics` (optionally `?year=YYYY`). The v1 contract is unchanged — see [docs/statistics-api.md](docs/statistics-api.md).
+
+## Development
+
+Requires Node.js 22+.
 
 ```bash
-npm run dev
+npm install
+npm run dev:mock            # fake Firefly III with synthetic data on :8089 (token: mock-token)
+npm run dev                 # API on :3000 + web app with hot reload on :5173
+npm test                    # calculator golden tests + API integration tests
+npm run typecheck
 ```
 
-This uses `docker-compose.dev.yml` to mount your local code directly into the containers. Any file changes you make will instantly reflect in the browser!
+On first start the dev server prints a setup code; use URL `http://127.0.0.1:8089` and token `mock-token` in the wizard.
 
-## 🏗 Architecture Overview
+| Path | What |
+|------|------|
+| `packages/shared` | zod settings schema, statistics payload types, metric registry, projection maths — shared by server and web |
+| `apps/server` | Fastify API: settings & encrypted secrets, auth, sync worker, calculator, tax modules, PDF reports, scheduler |
+| `apps/server/src/calc` | The calculator (pure functions, verified against v1 output) |
+| `apps/server/src/tax` | Tax modules — add one by implementing `calculate()` and registering it |
+| `apps/web` | React 19 + Tailwind CSS v4 + TanStack Query; strings in `src/i18n` |
 
-- **`backend/src/services/calculator.js`:** The core engine that processes raw transaction data from Firefly III, applying your configured tax rates and business rules.
-- **`backend/src/services/dataSources/`:** Pluggable architecture for incorporating external financial data providers. Currently supports Trading 212. Adding a new provider is as simple as creating a new file here that exports a fetching function, mapping the data to the expected `assetList` structure, and registering it in `index.js`.
-- **`backend/src/services/db.js` & `cacheWorker.js`:** Manages the local SQLite database layer and background cron job that periodically updates the cached statistics to prevent slow on-demand calculations.
-- **`backend/src/services/pdfGenerator.js`:** Uses headless Chrome (via Puppeteer) to navigate to the frontend, wait for charts to render, and print the page to a PDF buffer.
-- **`frontend/src/components/`:** Modular React components mapping to specific financial metrics (e.g., `TaxBreakdown`, `MonthlyChart`, `AssetOverview`).
+### Adding a language
+
+Copy `apps/web/src/i18n/en.ts` to e.g. `el.ts`, translate, register it in `apps/web/src/i18n/index.ts` and `appearanceSettingsSchema` in `packages/shared`, and add the PDF/e-mail strings in `apps/server/src/reports/strings.ts`.
+
+## License
+
+MIT
