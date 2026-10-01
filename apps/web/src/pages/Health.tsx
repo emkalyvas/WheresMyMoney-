@@ -31,6 +31,12 @@ function useCheckText() {
     const base = `health.checks.${c.id}`;
     const params: Record<string, unknown> = { ...c.params, count: c.count ?? 0 };
     if (c.id === 'firefly_sync' && c.severity === 'error') params.error = errorText(String(c.params?.error ?? ''));
+    if (c.id === 'brokers' && c.params?.reasons) {
+      params.reasons = String(c.params.reasons)
+        .split(', ')
+        .map((r) => (i18n.exists(`settings.connections.errors.${r}`) ? t(`settings.connections.errors.${r}` as never) : r))
+        .join(', ');
+    }
     const variant = c.severity === 'ok' ? 'ok' : c.id === 'firefly_sync' ? 'error' : 'problem';
     const key = `${base}.${variant}`;
     const title = i18n.exists(key) || i18n.exists(`${key}_other`) ? t(key as never, params as never) : c.id;

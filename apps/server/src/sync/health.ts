@@ -10,7 +10,7 @@ export interface HealthInput {
   liabilities: FireflyAccount[];
   knownAccounts: KnownAccount[];
   now: Date;
-  trading212Errors: { account: string; reason: string }[];
+  brokerErrors: { account: string; reason: string }[];
   fx: { missing: string[]; stale: string[] };
   transactionUrl: (groupId: string) => string;
 }
@@ -57,17 +57,22 @@ export function runHealthChecks(i: HealthInput): HealthReport {
     checks.push({ id: 'fx_stale', severity: 'warning', count: i.fx.stale.length, params: { currencies: i.fx.stale.join(', ') } });
   }
 
-  // --- Trading 212 -----------------------------------------------------------
-  if (i.settings.trading212.accounts.length) {
+  // --- Brokers (Trading 212, eToro, IBKR) ---------------------------------
+  const brokerAccounts =
+    i.settings.trading212.accounts.length + i.settings.etoro.accounts.length + i.settings.ibkr.accounts.length;
+  if (brokerAccounts) {
     checks.push(
-      i.trading212Errors.length
+      i.brokerErrors.length
         ? {
-            id: 'trading212',
+            id: 'brokers',
             severity: 'error',
-            count: i.trading212Errors.length,
-            params: { accounts: [...new Set(i.trading212Errors.map((e) => e.account))].join(', ') },
+            count: i.brokerErrors.length,
+            params: {
+              accounts: i.brokerErrors.map((e) => e.account).join(', '),
+              reasons: [...new Set(i.brokerErrors.map((e) => e.reason))].join(', '),
+            },
           }
-        : { id: 'trading212', severity: 'ok', params: { accounts: i.settings.trading212.accounts.length } },
+        : { id: 'brokers', severity: 'ok', params: { accounts: brokerAccounts } },
     );
   }
 

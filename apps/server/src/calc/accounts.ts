@@ -1,6 +1,7 @@
 import type { AccountKind, AccountStat, HoldingStat, Settings, StatisticsPayload } from '@wmm/shared';
 import type { FireflyAccount } from '../sources/firefly';
 import { isFiat } from '../sources/fx';
+import { BROKER_SUFFIX_RE } from '../sources/brokers';
 
 export type InputAccount = FireflyAccount | AccountStat;
 
@@ -80,11 +81,12 @@ export function buildAssets(
   const byCurrency = (code: string) => accounts.filter((a) => a.currency === code);
   const sum = (xs: AccountStat[], k: 'balance' | 'balanceEur') => xs.reduce((s, a) => s + a[k], 0);
 
-  const stocks = accounts.filter((a) => a.source === 'trading212' && a.kind === 'investment');
+  // Individual broker positions (any broker), grouped by ticker across accounts.
+  const stocks = accounts.filter((a) => !!a.source && a.source !== 'firefly' && a.kind === 'investment' && a.ticker);
   const investedStocks = Object.values(
     stocks.reduce<Record<string, HoldingStat>>((acc, a) => {
       const ticker = a.ticker ?? a.name.split(' ')[0];
-      acc[ticker] ??= { name: a.name.replace(/ \(Trading212.*\)/, ''), ticker, balance: 0, balanceEur: 0 };
+      acc[ticker] ??= { name: a.name.replace(BROKER_SUFFIX_RE, ''), ticker, balance: 0, balanceEur: 0 };
       acc[ticker].balance += a.balance;
       acc[ticker].balanceEur += a.balanceEur;
       return acc;
@@ -95,9 +97,11 @@ export function buildAssets(
     accounts
       .filter((a) => a.kind === 'crypto')
       .reduce<Record<string, HoldingStat>>((acc, a) => {
-        acc[a.currency] ??= { name: a.currency, ticker: a.currency, balance: 0, balanceEur: 0 };
-        acc[a.currency].balance += a.balance;
-        acc[a.currency].balanceEur += a.balanceEur;
+        // Wallets in Firefly carry the coin as their currency; broker positions are in EUR with a ticker.
+        const coin = (a.source && a.source !== 'firefly' && a.ticker ? a.ticker : a.currency).toUpperCase();
+        acc[coin] ??= { name: coin, ticker: coin, balance: 0, balanceEur: 0 };
+        acc[coin].balance += a.balance;
+        acc[coin].balanceEur += a.balanceEur;
         return acc;
       }, {}),
   );

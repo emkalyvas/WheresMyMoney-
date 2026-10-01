@@ -1,10 +1,15 @@
 /**
  * A tiny fake Firefly III API serving the synthetic dataset, for integration
- * tests and local development without real financial data.
+ * tests and local development without real financial data. It also fakes the
+ * eToro API (/etoro, keys "mock-key"/"mock-user") and the IBKR Flex Web Service
+ * (/ibkr, token "mock-token", query 123456).
  *
  *   npm run mock:firefly --workspace @wmm/server      # http://localhost:8089, token "mock-token"
+ *   WMM_DEV_ETORO_URL=http://127.0.0.1:8089/etoro WMM_DEV_IBKR_URL=http://127.0.0.1:8089/ibkr npm run dev
  */
+import fs from 'node:fs';
 import http from 'node:http';
+import path from 'node:path';
 import type { AddressInfo } from 'node:net';
 import { buildSyntheticFirefly } from './fixtures/synthetic.mjs';
 
@@ -48,6 +53,7 @@ export function startMockFirefly(port = 0): Promise<{ url: string; close: () => 
       res.writeHead(status, { 'Content-Type': 'application/vnd.api+json' });
       res.end(JSON.stringify(body));
     };
+    if (url.pathname.startsWith('/etoro/') || url.pathname.startsWith('/ibkr/')) return brokers(url, req, res);
     if (req.headers.authorization !== `Bearer ${MOCK_TOKEN}`) return send(401, { message: 'Unauthenticated.' });
 
     switch (url.pathname) {
@@ -74,6 +80,29 @@ export function startMockFirefly(port = 0): Promise<{ url: string; close: () => 
         return send(404, { message: 'Not found' });
     }
   });
+
+  const etoro = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, 'fixtures/etoro-portfolio.json'), 'utf8'));
+  const flex = fs.readFileSync(path.join(import.meta.dirname, 'fixtures/ibkr-flex.xml'), 'utf8');
+  const brokers = (url: URL, req: http.IncomingMessage, res: http.ServerResponse) => {
+    const reply = (status: number, body: string, type: string) => {
+      res.writeHead(status, { 'Content-Type': type });
+      res.end(body);
+    };
+    if (url.pathname.startsWith('/etoro/')) {
+      if (req.headers['x-api-key'] !== 'mock-key' || req.headers['x-user-key'] !== 'mock-user') return reply(401, '{}', 'application/json');
+      if (url.pathname.endsWith('/pnl')) return reply(200, JSON.stringify({ clientPortfolio: etoro.clientPortfolio }), 'application/json');
+      if (url.pathname.endsWith('/market-data/instruments')) return reply(200, JSON.stringify(etoro.instruments), 'application/json');
+      return reply(404, '{}', 'application/json');
+    }
+    const status = (body: string) => reply(200, `<FlexStatementResponse>${body}</FlexStatementResponse>`, 'application/xml');
+    if (url.searchParams.get('t') !== MOCK_TOKEN) return status('<Status>Fail</Status><ErrorCode>1015</ErrorCode><ErrorMessage>Token is invalid.</ErrorMessage>');
+    if (url.pathname.endsWith('/SendRequest')) {
+      if (url.searchParams.get('q') !== '123456') return status('<Status>Fail</Status><ErrorCode>1014</ErrorCode><ErrorMessage>Query is invalid.</ErrorMessage>');
+      return status('<Status>Success</Status><ReferenceCode>1234567890</ReferenceCode>');
+    }
+    if (url.pathname.endsWith('/GetStatement')) return reply(200, flex, 'application/xml');
+    return reply(404, '', 'text/plain');
+  };
 
   return new Promise((resolve) => {
     server.listen(port, '127.0.0.1', () => {

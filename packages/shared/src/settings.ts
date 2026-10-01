@@ -43,6 +43,35 @@ export const trading212SettingsSchema = z.object({
   accounts: z.array(trading212AccountSchema).max(10).default([]),
 });
 
+export const etoroAccountSchema = z.object({
+  id: z.string().regex(/^[a-z0-9]{6,32}$/),
+  name: z.string().trim().max(60).default(''),
+  env: z.enum(['real', 'demo']).default('real'),
+});
+export type EtoroAccount = z.infer<typeof etoroAccountSchema>;
+
+export const etoroSettingsSchema = z.object({
+  accounts: z.array(etoroAccountSchema).max(10).default([]),
+});
+
+export const ibkrAccountSchema = z.object({
+  id: z.string().regex(/^[a-z0-9]{6,32}$/),
+  name: z.string().trim().max(60).default(''),
+  /** Numeric ID of the Activity Flex Query (shown next to the query in the Client Portal). */
+  queryId: z.string().trim().regex(/^\d{1,12}$/, 'The Flex Query ID is a number').or(z.literal('')).default(''),
+  /** Flex statements are end-of-day and slow to generate, so they are fetched at most this often. */
+  refreshHours: z.number().int().min(1).max(24).default(6),
+});
+export type IbkrAccount = z.infer<typeof ibkrAccountSchema>;
+
+export const ibkrSettingsSchema = z.object({
+  accounts: z.array(ibkrAccountSchema).max(10).default([]),
+});
+
+/** Brokers that contribute holdings and cash next to Firefly III. */
+export const BROKERS = ['trading212', 'etoro', 'ibkr'] as const;
+export type Broker = (typeof BROKERS)[number];
+
 export const accountRuleSchema = z.object({
   include: z.boolean().default(true),
   kind: accountKindSchema.optional(),
@@ -120,6 +149,8 @@ export const settingsSchema = z.object({
   general: generalSettingsSchema.prefault({}),
   firefly: fireflySettingsSchema.prefault({}),
   trading212: trading212SettingsSchema.prefault({}),
+  etoro: etoroSettingsSchema.prefault({}),
+  ibkr: ibkrSettingsSchema.prefault({}),
   accounts: accountsSettingsSchema.prefault({}),
   fx: fxSettingsSchema.prefault({}),
   tax: taxSettingsSchema.prefault({}),
@@ -143,10 +174,12 @@ export function defaultSettings(): Settings {
 // Secrets
 // ---------------------------------------------------------------------------
 
-/** Secret keys are flat strings. Trading 212 secrets are per account id. */
+/** Secret keys are flat strings. Broker secrets are per account id. */
 export const secretKeySchema = z
   .string()
-  .regex(/^(firefly\.token|smtp\.pass|trading212\.[a-z0-9]{6,32}\.(apiKey|apiSecret))$/);
+  .regex(
+    /^(firefly\.token|smtp\.pass|trading212\.[a-z0-9]{6,32}\.(apiKey|apiSecret)|etoro\.[a-z0-9]{6,32}\.(apiKey|userKey)|ibkr\.[a-z0-9]{6,32}\.token)$/,
+  );
 export type SecretKey = z.infer<typeof secretKeySchema>;
 
 export interface SecretStatus {

@@ -1,6 +1,6 @@
 # WheresMyMoney! — project context for AI assistants
 
-Self-hosted dashboard for Firefly III data (plus Trading 212): net worth, cash flow, categories, Greek OE company tax and VAT, projections, PDF reports. See README.md for features, docs/MIGRATING.md for v1 → v2.
+Self-hosted dashboard for Firefly III data (plus Trading 212, eToro and Interactive Brokers): net worth, cash flow, categories, Greek OE company tax and VAT, projections, PDF reports. See README.md for features, docs/MIGRATING.md for v1 → v2.
 
 ## Layout (npm workspaces, TypeScript everywhere)
 
@@ -12,7 +12,8 @@ Self-hosted dashboard for Firefly III data (plus Trading 212): net worth, cash f
   - `src/settings/`: settings store, AES-GCM secrets (write-only via the API), one-time v1 `.env` importer.
   - `src/auth/`: scrypt passwords, hashed sessions (cookie for the browser, bearer for integrations), CSRF header check.
   - `src/reports/`: PDF via @react-pdf/renderer, mailer, minute-tick scheduler; server-side strings in `strings.ts`.
-  - `test/mock-firefly.ts`: fake Firefly III with synthetic data.
+  - `src/sources/`: Firefly client, FX, and broker connectors returning `BrokerHolding`s in their own currency (converted to EUR in the sync service). IBKR statements are cached in `kv` (`ibkr_cache:<id>`).
+  - `test/mock-firefly.ts`: fake Firefly III, eToro and IBKR Flex with synthetic data.
 - `apps/web`: React 19, Vite, Tailwind CSS v4 (tokens in `src/styles.css`), React Router 7, TanStack Query, react-hook-form + zod, Recharts, i18next (`src/i18n/en.ts`, typed keys).
 
 ## Conventions

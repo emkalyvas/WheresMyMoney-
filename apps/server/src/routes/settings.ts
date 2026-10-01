@@ -4,6 +4,7 @@ import {
   type ConnectionTestResult,
   type SecretKey,
   type SettingsResponse,
+  BROKERS,
   fireflySettingsSchema,
   settingsPatchSchema,
   settingsSchema,
@@ -11,6 +12,8 @@ import {
 import type { AppContext } from '../context';
 import { FireflyClient } from '../sources/firefly';
 import { UpstreamError } from '../sources/http';
+import { testEtoro } from '../sources/etoro';
+import { testIbkr } from '../sources/ibkr';
 import { testTrading212 } from '../sources/trading212';
 
 const fireflyTestSchema = z.object({
@@ -41,12 +44,13 @@ export function settingsRoutes(app: FastifyInstance, ctx: AppContext) {
   app.patch('/api/settings', async (req) => {
     const patch = settingsPatchSchema.parse(req.body);
     if (patch.section) {
-      const before = ctx.settings.get().trading212.accounts.map((a) => a.id);
+      const broker = (BROKERS as readonly string[]).includes(patch.section) ? (patch.section as (typeof BROKERS)[number]) : null;
+      const before = broker ? ctx.settings.get()[broker].accounts.map((a) => a.id) : [];
       ctx.settings.updateSection(patch.section, patch.value);
-      if (patch.section === 'trading212') {
-        // Drop the credentials of removed Trading 212 accounts.
-        const after = new Set(ctx.settings.get().trading212.accounts.map((a) => a.id));
-        for (const id of before) if (!after.has(id)) ctx.settings.deleteSecretsWithPrefix(`trading212.${id}.`);
+      if (broker) {
+        // Drop the credentials of removed broker accounts.
+        const after = new Set(ctx.settings.get()[broker].accounts.map((a) => a.id));
+        for (const id of before) if (!after.has(id)) ctx.settings.deleteSecretsWithPrefix(`${broker}.${id}.`);
       }
     }
     if (patch.secrets) ctx.settings.setSecrets(patch.secrets as Partial<Record<SecretKey, string | null>>);
@@ -62,8 +66,9 @@ export function settingsRoutes(app: FastifyInstance, ctx: AppContext) {
   app.post('/api/settings/import', async (req) => {
     const body = z.object({ settings: z.unknown() }).parse(req.body);
     const imported = settingsSchema.parse(body.settings);
-    // Keep Trading 212 accounts (their credentials are not part of exports).
-    ctx.settings.replace({ ...imported, trading212: ctx.settings.get().trading212 });
+    // Keep broker accounts (their credentials are not part of exports).
+    const current = ctx.settings.get();
+    ctx.settings.replace({ ...imported, trading212: current.trading212, etoro: current.etoro, ibkr: current.ibkr });
     return response();
   });
 
@@ -108,6 +113,43 @@ export function settingsRoutes(app: FastifyInstance, ctx: AppContext) {
       }
     },
   );
+
+  app.post<{ Params: { id: string } }>('/api/settings/test/etoro/:id', async (req): Promise<ConnectionTestResult> => {
+    const body = z
+      .object({ apiKey: z.string().max(512).optional(), userKey: z.string().max(512).optional(), env: z.enum(['real', 'demo']).optional() })
+      .parse(req.body ?? {});
+    const account = ctx.settings.get().etoro.accounts.find((a) => a.id === req.params.id);
+    const apiKey = body.apiKey || ctx.settings.getSecret(`etoro.${req.params.id}.apiKey` as SecretKey);
+    const userKey = body.userKey || ctx.settings.getSecret(`etoro.${req.params.id}.userKey` as SecretKey);
+    if (!apiKey || !userKey) return { ok: false, message: 'not_configured' };
+    try {
+      const r = await testEtoro({ id: req.params.id, name: account?.name ?? '', env: body.env ?? account?.env ?? 'real', apiKey, userKey });
+      return { ok: true, message: 'connected', details: { positions: r.positions } };
+    } catch (err) {
+      return failure(err);
+    }
+  });
+
+  /** Generating a Flex statement takes a few seconds up to ~1.5 minutes. */
+  app.post<{ Params: { id: string } }>('/api/settings/test/ibkr/:id', async (req): Promise<ConnectionTestResult> => {
+    const body = z
+      .object({ token: z.string().max(512).optional(), queryId: z.string().regex(/^\d{1,12}$/).optional() })
+      .parse(req.body ?? {});
+    const account = ctx.settings.get().ibkr.accounts.find((a) => a.id === req.params.id);
+    const token = body.token || ctx.settings.getSecret(`ibkr.${req.params.id}.token` as SecretKey);
+    const queryId = body.queryId || account?.queryId;
+    if (!token || !queryId) return { ok: false, message: 'not_configured' };
+    try {
+      const r = await testIbkr({ id: req.params.id, name: account?.name ?? '', refreshHours: 6, queryId, token });
+      return {
+        ok: true,
+        message: 'connected',
+        details: { accounts: r.accounts, positions: r.positions, missing: r.missingSections.join(', ') },
+      };
+    } catch (err) {
+      return failure(err);
+    }
+  });
 
   app.post('/api/settings/test/email', async (): Promise<ConnectionTestResult> => {
     if (!ctx.reports.emailConfigured()) return { ok: false, message: 'not_configured' };

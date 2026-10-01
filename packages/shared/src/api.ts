@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { passwordSchema } from './settings';
+import { type Broker, passwordSchema } from './settings';
 
 // ---------------------------------------------------------------------------
 // Auth & setup
@@ -74,7 +74,7 @@ export interface ConnectionTestResult {
 
 export interface KnownAccount {
   name: string;
-  source: 'firefly' | 'trading212';
+  source: 'firefly' | Broker;
   type: 'asset' | 'liability';
   currency: string;
   balance: number;

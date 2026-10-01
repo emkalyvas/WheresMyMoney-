@@ -86,7 +86,7 @@ export async function createContext(
 
 /** Starts background work and reacts to settings changes. */
 export function startBackground(ctx: AppContext) {
-  const recalcSections = new Set(['general', 'firefly', 'trading212', 'accounts', 'fx', 'tax', 'planning']);
+  const recalcSections = new Set(['general', 'firefly', 'trading212', 'etoro', 'ibkr', 'accounts', 'fx', 'tax', 'planning']);
   ctx.settings.on('change', (change) => {
     applyTimezone(ctx.settings.get().general.timezone);
     if (change.sections.includes('general')) ctx.sync.schedule();

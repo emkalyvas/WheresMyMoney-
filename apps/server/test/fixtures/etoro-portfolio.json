@@ -1,0 +1,18 @@
+{
+  "clientPortfolio": {
+    "credit": 250.5,
+    "positions": [
+      { "positionID": 1, "instrumentID": 1001, "isBuy": true, "leverage": 1, "units": 2, "amount": 300, "unrealizedPnL": { "pnL": 380 } },
+      { "positionID": 2, "instrumentID": 1001, "isBuy": true, "leverage": 1, "units": 1, "amount": 250, "unrealizedPnL": { "pnL": 90 } },
+      { "positionID": 3, "instrumentID": 100000, "isBuy": true, "leverage": 1, "units": 0.01, "amount": 600, "unrealizedPnL": { "pnL": 238 } },
+      { "positionID": 4, "instrumentID": 1001, "isBuy": false, "leverage": 5, "units": 1, "amount": 100, "unrealizedPnL": { "pnL": -20 } }
+    ],
+    "mirrors": [{ "availableAmount": 49.5, "positions": [] }]
+  },
+  "instruments": {
+    "instrumentDisplayDatas": [
+      { "instrumentID": 1001, "instrumentDisplayName": "Apple", "instrumentTypeID": 5, "symbolFull": "AAPL" },
+      { "instrumentID": 100000, "instrumentDisplayName": "Bitcoin", "instrumentTypeID": 10, "symbolFull": "BTCUSD" }
+    ]
+  }
+}

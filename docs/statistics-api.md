@@ -54,7 +54,7 @@ The payload type is defined in [`packages/shared/src/statistics.ts`](../packages
 | `monthOverMonth` | Current vs. previous month |
 | `tax` | `enabled`, `description`, `grossRevenue`/`companyExpenses` (net amounts, v1 naming), `revenue`/`expenses` `{net, gross, vat}`, `vatLiability {collected, paid, total, paidToGovt, remaining}`, `netTaxableProfit`, `expectedTaxTotal`, `effectiveTaxRate`, `breakdown[]`. v2 adds `module`, `year` and `breakdown[].key`. |
 | `netMonthlyIncome` | After-tax income, annualised |
-| `assets` | Totals, `accounts[]`, `liabilities[]`, BTC/ADA totals, `investedStocks[]`. v2 adds `accounts[].kind`, `accounts[].source`, `byKind`, `cryptoHoldings` |
+| `assets` | Totals, `accounts[]`, `liabilities[]`, BTC/ADA totals, `investedStocks[]`. v2 adds `accounts[].kind`, `accounts[].source` (`firefly`, `trading212`, `etoro`, `ibkr`), `byKind`, `cryptoHoldings`; `investedStocks` now includes positions from all brokers |
 | `categories` | All-time and 90-day category statistics |
 | `monthlyData` | Income/expenses/surplus per month |
 | `runway`, `projections` | v2 adds `projections.inputs` |

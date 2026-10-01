@@ -9,7 +9,10 @@ import type { SettingsStore } from '../settings/store';
 import { FireflyClient, type FireflyAccount, type FireflyTransactionGroup } from '../sources/firefly';
 import { UpstreamError } from '../sources/http';
 import { resolveEurRates } from '../sources/fx';
-import { type ExternalAccount, type Trading212Credentials, fetchTrading212Assets } from '../sources/trading212';
+import { type BrokerHolding, type BrokerResult, toAccountStats } from '../sources/brokers';
+import { type EtoroCredentials, fetchEtoro } from '../sources/etoro';
+import { type IbkrCacheEntry, type IbkrCredentials, fetchIbkr } from '../sources/ibkr';
+import { type Trading212Credentials, fetchTrading212 } from '../sources/trading212';
 import { runHealthChecks } from './health';
 import type { SnapshotStore } from './snapshots';
 
@@ -17,13 +20,15 @@ const KV_KNOWN_ACCOUNTS = 'known_accounts';
 const KV_HEALTH = 'health_report';
 const KV_FX = 'fx_last_known';
 const KV_LAST_SUCCESS = 'sync_last_success';
+const KV_IBKR_CACHE = 'ibkr_cache:';
 
 interface FetchedData {
   transactions: FireflyTransactionGroup[];
   assets: FireflyAccount[];
   liabilities: FireflyAccount[];
-  external: ExternalAccount[];
-  trading212Errors: { account: string; reason: string }[];
+  /** Holdings from brokers (Trading 212, eToro, IBKR) in their own currencies. */
+  external: BrokerHolding[];
+  brokerErrors: BrokerResult['errors'];
 }
 
 export class SyncNotConfiguredError extends Error {
@@ -60,6 +65,21 @@ export class SyncService {
     const token = this.settings.getSecret('firefly.token');
     if (!url || !token) throw new SyncNotConfiguredError();
     return new FireflyClient(url, token);
+  }
+
+  etoroCredentials(): EtoroCredentials[] {
+    return this.settings.get().etoro.accounts.map((a) => ({
+      ...a,
+      apiKey: this.settings.getSecret(`etoro.${a.id}.apiKey`) ?? '',
+      userKey: this.settings.getSecret(`etoro.${a.id}.userKey`) ?? '',
+    }));
+  }
+
+  ibkrCredentials(): IbkrCredentials[] {
+    return this.settings.get().ibkr.accounts.map((a) => ({
+      ...a,
+      token: this.settings.getSecret(`ibkr.${a.id}.token`) ?? '',
+    }));
   }
 
   trading212Credentials(): Trading212Credentials[] {
@@ -196,30 +216,34 @@ export class SyncService {
   private async fetchAll(date?: string, reuse?: FetchedData): Promise<FetchedData> {
     const settings = this.settings.get();
     const ff = this.firefly();
-    const [transactions, assets, liabilities, t212] = await Promise.all([
+    const [transactions, assets, liabilities, brokers] = await Promise.all([
       reuse ? reuse.transactions : ff.fetchTransactions(settings.general.startDate),
       ff.fetchAssetAccounts(date),
       ff.fetchLiabilityAccounts(date),
-      reuse
-        ? { assets: reuse.external, errors: [] }
-        : fetchTrading212Assets(this.trading212Credentials()),
+      reuse ? { holdings: reuse.external, errors: [] } : this.fetchBrokers(),
     ]);
-    return {
-      transactions,
-      assets,
-      liabilities,
-      external: t212.assets,
-      trading212Errors: (t212.errors ?? []).map((e) => ({
-        account: e.account,
-        reason: e.error instanceof UpstreamError ? e.error.reason : 'unreachable',
-      })),
+    return { transactions, assets, liabilities, external: brokers.holdings, brokerErrors: brokers.errors };
+  }
+
+  /** Current holdings from every configured broker. A failing broker never fails the sync. */
+  private async fetchBrokers(): Promise<BrokerResult> {
+    const cache = {
+      get: (id: string) => kvGet<IbkrCacheEntry>(this.db, `${KV_IBKR_CACHE}${id}`),
+      set: (id: string, entry: IbkrCacheEntry) => kvSet(this.db, `${KV_IBKR_CACHE}${id}`, entry),
     };
+    const results = await Promise.all([
+      fetchTrading212(this.trading212Credentials()),
+      fetchEtoro(this.etoroCredentials()),
+      fetchIbkr(this.ibkrCredentials(), cache),
+    ]);
+    return { holdings: results.flatMap((r) => r.holdings), errors: results.flatMap((r) => r.errors) };
   }
 
   private async rates(data: FetchedData, settings: Settings) {
-    const currencies = [...data.assets, ...data.liabilities]
-      .map((a) => a.attributes?.currency_code)
-      .filter((c): c is string => !!c);
+    const currencies = [
+      ...[...data.assets, ...data.liabilities].map((a) => a.attributes?.currency_code),
+      ...data.external.map((h) => h.currency),
+    ].filter((c): c is string => !!c);
     const lastKnown = kvGet<Record<string, number>>(this.db, KV_FX) ?? {};
     const fx = await resolveEurRates(currencies, settings.fx, lastKnown);
     kvSet(this.db, KV_FX, { ...lastKnown, ...Object.fromEntries(fx.rates) });
@@ -234,7 +258,7 @@ export class SyncService {
 
     const { payload, journals } = calculate({
       transactions: data.transactions,
-      assetAccounts: [...data.assets, ...data.external],
+      assetAccounts: [...data.assets, ...toAccountStats(data.external, fx.rates)],
       liabilityAccounts: data.liabilities,
       eurRates: fx.rates,
       now,
@@ -248,12 +272,12 @@ export class SyncService {
     const known: KnownAccount[] = [
       ...data.assets.map((a) => this.knownFromFirefly(a, 'asset', fx.rates)),
       ...data.liabilities.map((a) => this.knownFromFirefly(a, 'liability', fx.rates)),
-      ...data.external.map<KnownAccount>((a) => ({
+      ...toAccountStats(data.external, fx.rates).map<KnownAccount>((a, i) => ({
         name: a.name,
-        source: 'trading212',
+        source: data.external[i].source,
         type: 'asset',
-        currency: a.currency,
-        balance: a.balance,
+        currency: data.external[i].currency,
+        balance: data.external[i].value,
         balanceEur: a.balanceEur,
         excludedInFirefly: false,
         suggestedKind: defaultKind(a),
@@ -272,7 +296,7 @@ export class SyncService {
         liabilities: data.liabilities,
         knownAccounts: known,
         now,
-        trading212Errors: data.trading212Errors,
+        brokerErrors: data.brokerErrors,
         fx: { missing: fx.missing, stale: fx.stale },
         transactionUrl: (id) => ff.transactionUrl(id),
       }),
@@ -312,7 +336,7 @@ export class SyncService {
       const data = await this.fetchAll(date, base);
       const { payload } = calculate({
         transactions: data.transactions,
-        assetAccounts: [...data.assets, ...data.external],
+        assetAccounts: [...data.assets, ...toAccountStats(data.external, fx.rates)],
         liabilityAccounts: data.liabilities,
         eurRates: fx.rates,
         now: monthEnd,

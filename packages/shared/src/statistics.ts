@@ -1,4 +1,4 @@
-import type { AccountKind } from './settings';
+import type { AccountKind, Broker } from './settings';
 
 /**
  * The statistics payload served by `GET /api/statistics`.
@@ -71,7 +71,7 @@ export interface AccountStat {
   /** v2 */
   kind?: AccountKind;
   /** v2: where the account came from */
-  source?: 'firefly' | 'trading212';
+  source?: 'firefly' | Broker;
 }
 
 export interface HoldingStat {

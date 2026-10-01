@@ -11,6 +11,13 @@ import { SaveBar, SettingsCard } from './common';
 
 type Rules = Settings['accounts']['rules'];
 
+const SOURCE_LABEL: Record<KnownAccount['source'], string> = {
+  firefly: 'Firefly III',
+  trading212: 'Trading 212',
+  etoro: 'eToro',
+  ibkr: 'Interactive Brokers',
+};
+
 export default function AccountsSettings() {
   return <AccountsEditor />;
 }
@@ -158,7 +165,7 @@ function AccountGroup({
               <div className="min-w-0 flex-1">
                 <Private className={included ? 'font-medium' : 'font-medium text-muted-foreground line-through'}>{a.name}</Private>
                 <div className="text-xs text-muted-foreground">
-                  {a.source === 'trading212' ? 'Trading 212' : 'Firefly III'} · {a.currency}
+                  {SOURCE_LABEL[a.source]} · {a.currency}
                   {a.excludedInFirefly && <> · {t('settings.accounts.excludedInFirefly')}</>}
                 </div>
               </div>

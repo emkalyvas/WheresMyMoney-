@@ -1,9 +1,6 @@
-import type { AccountStat, Trading212Account } from '@wmm/shared';
-import { UpstreamError, fetchJson } from './http';
-
-export interface ExternalAccount extends AccountStat {
-  source: 'trading212';
-}
+import type { Trading212Account } from '@wmm/shared';
+import { type BrokerHolding, type BrokerResult, errorReason } from './brokers';
+import { fetchJson } from './http';
 
 export interface Trading212Credentials extends Trading212Account {
   apiKey: string;
@@ -46,52 +43,40 @@ export async function testTrading212(c: Trading212Credentials) {
 }
 
 /**
- * Fetches uninvested cash and open positions for every configured account and
- * maps them to asset accounts. Ids/names follow v1 conventions (`t212_…`,
- * "… (Trading212 - <name>)") so stored history stays comparable.
+ * Uninvested cash and open positions for every configured account. Ids and
+ * names follow v1 conventions (`t212_…`, "… (Trading212 - <name>)") so stored
+ * history and account settings stay valid. Values are reported in EUR.
  */
-export async function fetchTrading212Assets(
-  accounts: Trading212Credentials[],
-): Promise<{ assets: ExternalAccount[]; errors: { account: string; error: UpstreamError }[] }> {
-  const errors: { account: string; error: UpstreamError }[] = [];
+export async function fetchTrading212(accounts: Trading212Credentials[]): Promise<BrokerResult> {
+  const errors: BrokerResult['errors'] = [];
   const results = await Promise.all(
     accounts.map(async (account, index) => {
       if (!account.apiKey || !account.apiSecret) return [];
       const label = account.name || `#${index + 1}`;
       const url = baseUrl(account.env);
       const h = headers(account);
+      const get = <T,>(path: string) =>
+        fetchJson<T>('trading212', `${url}${path}`, { headers: h, timeoutMs: 10_000 }).catch((e: unknown) => {
+          errors.push({ account: `Trading 212 · ${label}`, reason: errorReason(e) });
+          return null;
+        });
 
-      const [cash, positions] = await Promise.all([
-        fetchJson<CashResponse>('trading212', `${url}/equity/account/cash`, { headers: h, timeoutMs: 10_000 }).catch(
-          (e: UpstreamError) => {
-            errors.push({ account: label, error: e });
-            return null;
-          },
-        ),
-        fetchJson<Position[]>('trading212', `${url}/equity/positions`, { headers: h, timeoutMs: 10_000 }).catch(
-          (e: UpstreamError) => {
-            errors.push({ account: label, error: e });
-            return null;
-          },
-        ),
-      ]);
+      const [cash, positions] = await Promise.all([get<CashResponse>('/equity/account/cash'), get<Position[]>('/equity/positions')]);
 
       const multi = accounts.length > 1;
       const suffix = account.name ? ` - ${account.name}` : multi ? ` (${index + 1})` : '';
       const idPrefix = multi ? `t212_${index}_` : 't212_';
-      const out: ExternalAccount[] = [];
+      const out: BrokerHolding[] = [];
 
       const uninvested = Number.parseFloat(String(cash?.free ?? cash?.total ?? cash?.cash ?? '0'));
       if (uninvested > 0) {
         out.push({
           id: `${idPrefix}cash`,
           name: `Uninvested Cash (Trading212${suffix})`,
-          type: 'asset',
-          currency: 'EUR',
-          balance: uninvested,
-          balanceEur: uninvested,
-          exchangeRate: 1,
           kind: 'cash',
+          units: uninvested,
+          value: uninvested,
+          currency: 'EUR',
           source: 'trading212',
         });
       }
@@ -107,12 +92,10 @@ export async function fetchTrading212Assets(
             id: `${idPrefix}${ticker}`,
             name: `${pos.instrument?.name ?? ticker} (Trading212${suffix})`,
             ticker,
-            type: 'asset',
-            currency: 'EUR',
-            balance: quantity,
-            balanceEur: value,
-            exchangeRate: 1,
             kind: 'investment',
+            units: quantity,
+            value,
+            currency: 'EUR',
             source: 'trading212',
           });
         }
@@ -120,5 +103,5 @@ export async function fetchTrading212Assets(
       return out;
     }),
   );
-  return { assets: results.flat(), errors };
+  return { holdings: results.flat(), errors };
 }

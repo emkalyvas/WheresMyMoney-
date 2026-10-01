@@ -280,5 +280,7 @@ const errorKeys = () =>
     rate_limited: 'settings.connections.errors.rate_limited',
     bad_response: 'settings.connections.errors.bad_response',
     timeout: 'settings.connections.errors.timeout',
+    not_ready: 'settings.connections.errors.not_ready',
+    invalid_config: 'settings.connections.errors.invalid_config',
     not_configured: 'settings.connections.errors.not_configured',
   }) as const;
