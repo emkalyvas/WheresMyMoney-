@@ -1,64 +1,23 @@
 services:
-  backend:
-    build: ./backend
+  wheresmymoney:
+    build: .
+    image: wheresmymoney:2
     restart: unless-stopped
-    environment:
-      FIREFLY_API_URL: ${FIREFLY_API_URL}
-      FIREFLY_TOKEN: ${FIREFLY_TOKEN}
-      BACKEND_PORT: 3001
-      COMPANY_TAG: ${COMPANY_TAG:-MnApps}
-      START_DATE: ${START_DATE:-2024-01-01}
-      INCOME_TAX_RATE: ${INCOME_TAX_RATE:-0.22}
-      BUSINESS_TAX: ${BUSINESS_TAX:-800}
-      ADVANCE_TAX_RATE: ${ADVANCE_TAX_RATE:-0.40}
-      VAT_TAG: ${VAT_TAG:-ΦΠΑ}
-      NO_VAT_TAG: ${NO_VAT_TAG:-No VAT}
-      DEFAULT_VAT: ${DEFAULT_VAT:-24}
-      VAT_EXPENSE_TAG: ${VAT_EXPENSE_TAG:-}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_SECURE: ${SMTP_SECURE:-false}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
-      SMTP_FROM: ${SMTP_FROM}
-      REPORT_EMAILS: ${REPORT_EMAILS}
-      REPORT_SCHEDULE_DAY: ${REPORT_SCHEDULE_DAY:-1}
-      REPORT_SCHEDULE_TIME: ${REPORT_SCHEDULE_TIME:-08:00}
-      IGNORE_FIREFLY_ACCOUNTS: ${IGNORE_FIREFLY_ACCOUNTS:-}
-      TRADING212_API_KEY: ${TRADING212_API_KEY:-}
-      TRADING212_API_SECRET: ${TRADING212_API_SECRET:-}
-      TRADING212_ENV: ${TRADING212_ENV:-live}
-      TRADING212_API_KEYS: ${TRADING212_API_KEYS:-}
-      TRADING212_API_SECRETS: ${TRADING212_API_SECRETS:-}
-      TRADING212_ENVS: ${TRADING212_ENVS:-}
-      TRADING212_ACCOUNT_NAMES: ${TRADING212_ACCOUNT_NAMES:-}
-      STATISTICS_CACHE_TTL_MINUTES: ${STATISTICS_CACHE_TTL_MINUTES:-15}
-      TARGET_ASSET_GOAL: ${TARGET_ASSET_GOAL:-1000000}
-      EXPECTED_INVESTMENT_GROWTH_RATE: ${EXPECTED_INVESTMENT_GROWTH_RATE:-0.07}
-      SAFE_WITHDRAWAL_RATE: ${SAFE_WITHDRAWAL_RATE:-0.04}
-      MONTHLY_INVESTMENT_AMOUNT: ${MONTHLY_INVESTMENT_AMOUNT:-500}
-      PROJECTION_HORIZON_YEARS: ${PROJECTION_HORIZON_YEARS:-30}
-      APP_PASSWORD: ${APP_PASSWORD:-}
     ports:
-      - "${BACKEND_PORT:-3001}:${BACKEND_PORT:-3001}"
+      # One port serves the web app and the API (/api/...). Defaults to the v1 frontend port.
+      - "${WMM_PORT:-${FRONTEND_PORT:-3000}}:3000"
     volumes:
-      - ./backend/data:/app/data:z
-    networks:
-      - wmm-network
-
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_BACKEND_PORT: ${BACKEND_PORT:-3001}
-    restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    depends_on:
-      - backend
-    networks:
-      - wmm-network
-
-networks:
-  wmm-network:
-    driver: bridge
+      # Database, encrypted secrets and history. Upgrading from v1? See docs/MIGRATING.md
+      # (either move ./backend/data to ./data or set WMM_DATA_DIR=./backend/data).
+      - ${WMM_DATA_DIR:-./data}:/data:z
+    # v1 configuration is imported from .env ONCE on first start (secrets are
+    # encrypted into the database). After that, delete the old variables.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Optional: keep the encryption key outside the data volume (hex/base64 32 bytes or a long passphrase).
+      WMM_SECRET_KEY: ${WMM_SECRET_KEY:-}
+      # Addresses of reverse proxies allowed to set X-Forwarded-* (defaults to private networks).
+      TRUST_PROXY: ${TRUST_PROXY:-127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1,fc00::/7}
+      LOG_LEVEL: ${LOG_LEVEL:-info}

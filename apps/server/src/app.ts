@@ -87,7 +87,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: FastifyBaseLogg
   registerAuth(app, ctx);
 
   // Container health check; reveals nothing.
-  app.get('/health', async () => ({ status: 'ok' }));
+  app.get('/healthz', async () => ({ status: 'ok' }));
 
   authRoutes(app, ctx);
   settingsRoutes(app, ctx);

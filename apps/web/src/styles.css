@@ -1,0 +1,131 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens. Light is the default; .dark on <html> switches the palette. */
+:root {
+  --background: oklch(0.985 0.002 260);
+  --foreground: oklch(0.21 0.03 265);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --muted: oklch(0.965 0.005 260);
+  --muted-foreground: oklch(0.52 0.025 260);
+  --border: oklch(0.92 0.008 260);
+  --input: oklch(0.9 0.01 260);
+  --ring: oklch(0.55 0.2 275);
+  --primary: oklch(0.51 0.23 277);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.955 0.02 277);
+  --accent-foreground: oklch(0.4 0.2 277);
+  --positive: oklch(0.56 0.13 165);
+  --negative: oklch(0.58 0.21 17);
+  --warning: oklch(0.7 0.16 70);
+  --info: oklch(0.6 0.15 240);
+
+  /* Chart palette (colour-blind-safe pairing: teal vs. rose, distinguishable by lightness too) */
+  --chart-income: oklch(0.6 0.12 180);
+  --chart-expense: oklch(0.64 0.19 15);
+  --chart-1: oklch(0.55 0.2 277);
+  --chart-2: oklch(0.65 0.13 180);
+  --chart-3: oklch(0.75 0.15 75);
+  --chart-4: oklch(0.62 0.19 15);
+  --chart-5: oklch(0.6 0.1 240);
+  --chart-6: oklch(0.7 0.08 320);
+  --chart-grid: oklch(0.92 0.008 260);
+
+  --radius: 0.75rem;
+  color-scheme: light;
+}
+
+.dark {
+  --background: oklch(0.16 0.02 265);
+  --foreground: oklch(0.95 0.01 260);
+  --card: oklch(0.2 0.025 265);
+  --card-foreground: var(--foreground);
+  --muted: oklch(0.24 0.025 265);
+  --muted-foreground: oklch(0.7 0.02 260);
+  --border: oklch(0.3 0.025 265);
+  --input: oklch(0.34 0.025 265);
+  --ring: oklch(0.65 0.18 277);
+  --primary: oklch(0.65 0.19 277);
+  --primary-foreground: oklch(0.16 0.02 265);
+  --accent: oklch(0.28 0.05 277);
+  --accent-foreground: oklch(0.88 0.08 277);
+  --positive: oklch(0.74 0.14 165);
+  --negative: oklch(0.72 0.17 17);
+  --warning: oklch(0.8 0.15 75);
+  --info: oklch(0.72 0.13 240);
+  --chart-income: oklch(0.72 0.12 180);
+  --chart-expense: oklch(0.7 0.17 15);
+  --chart-grid: oklch(0.3 0.025 265);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
+
+/* Amounts: tabular figures so columns line up */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Privacy mode: blur anything marked private (amounts, account names, chart values) */
+.privacy .private {
+  filter: blur(7px);
+  user-select: none;
+}
+/* Recharts sets tooltip visibility inline, hence !important */
+.privacy .recharts-tooltip-wrapper {
+  display: none !important;
+}
+.privacy .private-axis .recharts-cartesian-axis-tick-value {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
