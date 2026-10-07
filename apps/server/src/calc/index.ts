@@ -4,6 +4,7 @@ import { calculateTax } from '../tax';
 import { type InputAccount, accountName, buildAssets, buildIgnoredSet } from './accounts';
 import { type AverageWindow, categoryStats, rollingCategoryStats } from './categories';
 import { periodSummaries, periodWindows } from './periods';
+import { cashflowVatFn } from './vat';
 import {
   DAYS_IN_MONTH,
   type Journal,
@@ -155,8 +156,9 @@ export function calculate(input: CalcInput): CalcOutput {
   // -------------------------------------------------------------------------
   // 6. Categories
   // -------------------------------------------------------------------------
-  const categoryExpenses = categoryStats(expenses, window);
-  const categoryIncome = categoryStats(income, window);
+  const vatOf = cashflowVatFn(settings.tax);
+  const categoryExpenses = categoryStats(expenses, window, vatOf);
+  const categoryIncome = categoryStats(income, window, vatOf);
   const categoryExpenses90d = rollingCategoryStats(expenses90d, 90);
   const categoryIncome90d = rollingCategoryStats(income90d, 90);
 
@@ -195,7 +197,7 @@ export function calculate(input: CalcInput): CalcOutput {
   const [ey, em] = avgEndMonth.split('-').map(Number);
   const avgEnd =
     avgEndMonth === currentMonthKey ? now : new Date(ey, em, 0, 23, 59, 59, 999); // last day of that month
-  const periods = periodSummaries(income, expenses, periodWindows(now, startDate, totalMonths, avgEnd));
+  const periods = periodSummaries(income, expenses, periodWindows(now, startDate, totalMonths, avgEnd), vatOf);
 
   const payload: StatisticsPayload = {
     schemaVersion: PAYLOAD_SCHEMA_VERSION,
@@ -281,6 +283,7 @@ export function calculate(input: CalcInput): CalcOutput {
       totalMonths,
       approximations: input.approximations ?? [],
       excludeCurrentMonthFromAverages: excludeCurrent,
+      ...(vatOf ? { cashflowVat: settings.tax.cashflowVat.scope as 'company' | 'all' } : {}),
     },
   };
 

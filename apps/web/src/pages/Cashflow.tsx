@@ -8,6 +8,7 @@ import { PeriodControls } from '@/components/PeriodControls';
 import { CashflowChart } from '@/components/charts/CashflowChart';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Segmented } from '@/components/ui/controls';
+import { InfoTip } from '@/components/ui/overlay';
 import { Alert } from '@/components/ui/misc';
 import { Delta, Money } from '@/components/metric/Money';
 import { useOpenHistory } from '@/components/metric/History';
@@ -23,6 +24,8 @@ interface Row {
   median?: number;
   trend?: number | null;
   rankChange?: number | null;
+  /** VAT contained in `total` (when VAT in cash flow is enabled) */
+  vat?: number;
 }
 
 export default function Cashflow() {
@@ -45,7 +48,7 @@ function useRows(data: StatisticsPayload, period: PeriodKey, kind: 'expenses' | 
         const total = usable.reduce((s, c) => s + c.total, 0) || 1;
         return {
           legacy: !data.periods,
-          rows: usable.map((c) => ({ name: c.name, total: c.total, monthly: c.monthlyMean, share: c.total / total, count: c.transactionCount })),
+          rows: usable.map((c) => ({ name: c.name, total: c.total, monthly: c.monthlyMean, share: c.total / total, count: c.transactionCount })), // v1 snapshots: no VAT
         };
       }
       const total = allTime.reduce((s, c) => s + c.total, 0) || 1;
@@ -60,13 +63,14 @@ function useRows(data: StatisticsPayload, period: PeriodKey, kind: 'expenses' | 
           count: c.transactionCount,
           trend: pctChange(c.monthlyMean, c.previousMonthlyMean),
           rankChange: c.rankChange,
+          vat: c.vat,
         })),
       };
     }
     const p = data.periods[period];
     return {
       legacy: false,
-      rows: p.categories[kind].map((c) => ({ name: c.name, total: c.total, monthly: c.monthly, share: c.share, count: c.transactionCount })),
+      rows: p.categories[kind].map((c) => ({ name: c.name, total: c.total, monthly: c.monthly, share: c.share, count: c.transactionCount, vat: c.vat })),
     };
   }, [data, period, kind]);
 }
@@ -101,8 +105,18 @@ function CashflowContent({ data }: { data: StatisticsPayload }) {
       )}
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <SummaryTile label={t('cashflow.income')} value={<Money value={totals.income} />} sub={<Money value={totals.mi} />} />
-        <SummaryTile label={t('cashflow.spending')} value={<Money value={totals.expenses} />} sub={<Money value={totals.me} />} />
+        <SummaryTile
+          label={t('cashflow.income')}
+          value={<Money value={totals.income} />}
+          sub={<Money value={totals.mi} />}
+          vat={summary?.incomeVat}
+        />
+        <SummaryTile
+          label={t('cashflow.spending')}
+          value={<Money value={totals.expenses} />}
+          sub={<Money value={totals.me} />}
+          vat={summary?.expensesVat}
+        />
         <SummaryTile label={t('cashflow.surplus')} value={<Money value={totals.surplus} tone="auto" />} sub={<Money value={totals.mi - totals.me} />} />
         <SummaryTile label={t('cashflow.savingsRate')} value={<span className="private tabular">{f.percent(totals.rate)}</span>} />
       </div>
@@ -117,6 +131,14 @@ function CashflowContent({ data }: { data: StatisticsPayload }) {
       <Card>
         <CardHeader
           title={t('cashflow.categories')}
+          description={
+            data.meta.cashflowVat && (
+              <span className="inline-flex items-center gap-1">
+                {t(`cashflow.vatScope.${data.meta.cashflowVat}`)}
+                <InfoTip>{t('cashflow.vatHint')}</InfoTip>
+              </span>
+            )
+          }
           action={
             <Segmented
               label={t('cashflow.categories')}
@@ -137,7 +159,7 @@ function CashflowContent({ data }: { data: StatisticsPayload }) {
   );
 }
 
-function SummaryTile({ label, value, sub }: { label: string; value: React.ReactNode; sub?: React.ReactNode }) {
+function SummaryTile({ label, value, sub, vat }: { label: string; value: React.ReactNode; sub?: React.ReactNode; vat?: number }) {
   const { t } = useTranslation();
   return (
     <div className="rounded-xl border bg-card p-4 shadow-xs">
@@ -146,6 +168,11 @@ function SummaryTile({ label, value, sub }: { label: string; value: React.ReactN
       {sub && (
         <div className="mt-1 text-xs text-muted-foreground">
           {sub} {t('common.perMonth')}
+        </div>
+      )}
+      {vat !== undefined && (
+        <div className="mt-0.5 text-xs text-muted-foreground">
+          {t('cashflow.ofWhichVat')} <Money value={vat} />
         </div>
       )}
     </div>
@@ -160,6 +187,7 @@ function CategoryTable({ rows, kind }: { rows: Row[]; kind: 'expenses' | 'income
   if (rows.length === 0) return <p className="py-10 text-center text-sm text-muted-foreground">{t('cashflow.noCategories')}</p>;
   const visible = expanded ? rows : rows.slice(0, 12);
   const hasMedian = rows.some((r) => r.median !== undefined);
+  const hasVat = rows.some((r) => r.vat !== undefined);
   const color = kind === 'expenses' ? 'var(--chart-expense)' : 'var(--chart-income)';
 
   return (
@@ -173,6 +201,7 @@ function CategoryTable({ rows, kind }: { rows: Row[]; kind: 'expenses' | 'income
               <th className="py-2 text-right font-medium">{t('cashflow.monthly')}</th>
               {hasMedian && <th className="hidden py-2 text-right font-medium md:table-cell">{t('cashflow.median')}</th>}
               <th className="py-2 text-right font-medium">{t('cashflow.total')}</th>
+              {hasVat && <th className="hidden py-2 text-right font-medium sm:table-cell">{t('cashflow.vat')}</th>}
               <th className="hidden py-2 text-right font-medium sm:table-cell">{t('cashflow.count')}</th>
             </tr>
           </thead>
@@ -228,7 +257,20 @@ function CategoryTable({ rows, kind }: { rows: Row[]; kind: 'expenses' | 'income
                 )}
                 <td className="py-2.5 text-right">
                   <Money value={r.total} />
+                  {hasVat && (
+                    <div className="text-[11px] text-muted-foreground sm:hidden">
+                      {t('cashflow.vat')} <Money value={r.vat ?? 0} />
+                    </div>
+                  )}
                 </td>
+                {hasVat && (
+                  <td className="hidden py-2.5 text-right sm:table-cell">
+                    <Money value={r.vat ?? 0} />
+                    <div className="text-[11px] text-muted-foreground">
+                      {t('cashflow.net')} <Money value={r.total - (r.vat ?? 0)} />
+                    </div>
+                  </td>
+                )}
                 <td className="hidden py-2.5 text-right tabular text-muted-foreground sm:table-cell">{r.count}</td>
               </tr>
             ))}

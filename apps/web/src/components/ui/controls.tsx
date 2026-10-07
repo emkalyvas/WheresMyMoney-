@@ -54,7 +54,7 @@ export function Field({
   const auto = useId();
   const fieldId = id ?? auto;
   return (
-    <div className={cn('grid gap-1.5', className)}>
+    <div className={cn('grid content-start gap-1.5', className)}>
       <Label htmlFor={fieldId}>{label}</Label>
       {children(fieldId)}
       {error ? (

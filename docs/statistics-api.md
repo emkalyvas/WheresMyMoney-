@@ -55,11 +55,11 @@ The payload type is defined in [`packages/shared/src/statistics.ts`](../packages
 | `tax` | `enabled`, `description`, `grossRevenue`/`companyExpenses` (net amounts, v1 naming), `revenue`/`expenses` `{net, gross, vat}`, `vatLiability {collected, paid, total, paidToGovt, remaining}`, `netTaxableProfit`, `expectedTaxTotal`, `effectiveTaxRate`, `breakdown[]`. v2 adds `module`, `year` and `breakdown[].key`. |
 | `netMonthlyIncome` | After-tax income, annualised |
 | `assets` | Totals, `accounts[]`, `liabilities[]`, BTC/ADA totals, `investedStocks[]`. v2 adds `accounts[].kind`, `accounts[].source` (`firefly`, `trading212`, `etoro`, `ibkr`), `byKind`, `cryptoHoldings`; `investedStocks` now includes positions from all brokers |
-| `categories` | All-time and 90-day category statistics |
+| `categories` | All-time and 90-day category statistics. v2 adds `vat` (VAT contained in `total`) when VAT in cash flow is enabled |
 | `monthlyData` | Income/expenses/surplus per month |
 | `runway`, `projections` | v2 adds `projections.inputs` |
-| `periods` (v2) | Per-period summaries: `month`, `90d`, `ytd`, `12m`, `all` |
-| `meta` | `lastUpdated`, `dataStartDate`, `currentYear`, … v2 adds `approximations`, `excludeCurrentMonthFromAverages` |
+| `periods` (v2) | Per-period summaries: `month`, `90d`, `ytd`, `12m`, `all`; with VAT in cash flow enabled also `incomeVat`, `expensesVat` and `categories[].vat` |
+| `meta` | `lastUpdated`, `dataStartDate`, `currentYear`, … v2 adds `approximations`, `excludeCurrentMonthFromAverages`, `cashflowVat` (`company`/`all`, absent when off) |
 | `schemaVersion` (v2) | `2` |
 
 ## Other endpoints

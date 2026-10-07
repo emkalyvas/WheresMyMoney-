@@ -22,6 +22,8 @@ export interface CategoryStat {
   currentRank: number | null;
   previousRank: number | null;
   rankChange: number | null;
+  /** v2: VAT contained in `total` (only when VAT in cash flow is enabled) */
+  vat?: number;
 }
 
 export interface RollingCategoryStat {
@@ -103,6 +105,9 @@ export interface PeriodSummary {
   savingsRate: number | null;
   monthlyIncome: number;
   monthlyExpenses: number;
+  /** v2: VAT contained in `income` / `expenses` (only when VAT in cash flow is enabled) */
+  incomeVat?: number;
+  expensesVat?: number;
   categories: {
     expenses: PeriodCategory[];
     income: PeriodCategory[];
@@ -115,6 +120,8 @@ export interface PeriodCategory {
   monthly: number;
   share: number;
   transactionCount: number;
+  /** VAT contained in `total` (only when VAT in cash flow is enabled) */
+  vat?: number;
 }
 
 export interface StatisticsPayload {
@@ -242,6 +249,8 @@ export interface StatisticsPayload {
     /** v2: things that are estimated rather than exact (e.g. backfilled snapshots) */
     approximations?: string[];
     excludeCurrentMonthFromAverages?: boolean;
+    /** v2: which transactions the cash-flow VAT amounts cover; absent when disabled */
+    cashflowVat?: 'company' | 'all';
   };
   /** Added when served from the cache. */
   _cachedAt?: string;

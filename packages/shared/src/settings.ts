@@ -105,9 +105,21 @@ export const grOeSettingsSchema = z.object({
 export type GrOeSettings = z.infer<typeof grOeSettingsSchema>;
 
 export const TAX_MODULES = ['none', 'gr_oe'] as const;
+/**
+ * VAT amounts in the cash flow, using the VAT rules of the tax settings
+ * (no-VAT tag → 0 %, "<prefix> <rate>" tag → that rate, otherwise the default rate).
+ */
+export const CASHFLOW_VAT_SCOPES = ['off', 'company', 'all'] as const;
+export const cashflowVatSettingsSchema = z.object({
+  scope: z.enum(CASHFLOW_VAT_SCOPES).default('off'),
+  /** Categories that never contain VAT (e.g. rent, salary, taxes); counted at 0 %. */
+  excludedCategories: z.array(z.string().trim().min(1).max(120)).max(200).default([]),
+});
+
 export const taxSettingsSchema = z.object({
   module: z.enum(TAX_MODULES).default('none'),
   grOe: grOeSettingsSchema.prefault({}),
+  cashflowVat: cashflowVatSettingsSchema.prefault({}),
 });
 
 export const planningSettingsSchema = z.object({

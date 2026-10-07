@@ -1,5 +1,6 @@
 import type { PeriodCategory, PeriodKey, PeriodSummary } from '@wmm/shared';
 import { DAYS_IN_MONTH, type Journal, groupBy, localDateKey, sumAmounts } from './util';
+import { type VatFn, sumVat } from './vat';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -38,7 +39,7 @@ export function periodWindows(now: Date, startDate: Date, avgMonthsCount: number
   return windows;
 }
 
-function categories(journals: Journal[], months: number, total: number): PeriodCategory[] {
+function categories(journals: Journal[], months: number, total: number, vatOf: VatFn | null): PeriodCategory[] {
   return Object.entries(groupBy(journals, (j) => j.category))
     .map(([name, txs]) => {
       const t = sumAmounts(txs);
@@ -48,6 +49,7 @@ function categories(journals: Journal[], months: number, total: number): PeriodC
         monthly: t / months,
         share: total > 0 ? t / total : 0,
         transactionCount: txs.length,
+        ...(vatOf ? { vat: sumVat(txs, vatOf) } : {}),
       };
     })
     .sort((a, b) => b.total - a.total);
@@ -57,6 +59,7 @@ export function periodSummaries(
   income: Journal[],
   expenses: Journal[],
   windows: Record<PeriodKey, PeriodWindow>,
+  vatOf: VatFn | null = null,
 ): Record<PeriodKey, PeriodSummary> {
   const out = {} as Record<PeriodKey, PeriodSummary>;
   for (const [key, w] of Object.entries(windows) as [PeriodKey, PeriodWindow][]) {
@@ -75,9 +78,10 @@ export function periodSummaries(
       savingsRate: incomeTotal > 0 ? ((incomeTotal - expensesTotal) / incomeTotal) * 100 : null,
       monthlyIncome: incomeTotal / w.months,
       monthlyExpenses: expensesTotal / w.months,
+      ...(vatOf ? { incomeVat: sumVat(inc, vatOf), expensesVat: sumVat(exp, vatOf) } : {}),
       categories: {
-        expenses: categories(exp, w.months, expensesTotal),
-        income: categories(inc, w.months, incomeTotal),
+        expenses: categories(exp, w.months, expensesTotal, vatOf),
+        income: categories(inc, w.months, incomeTotal, vatOf),
       },
     };
   }

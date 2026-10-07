@@ -1,5 +1,6 @@
 import type { CategoryStat, RollingCategoryStat } from '@wmm/shared';
 import { DAYS_IN_MONTH, type Journal, groupBy, median, monthKey, sumAmounts } from './util';
+import { type VatFn, sumVat } from './vat';
 
 export interface AverageWindow {
   /** Months used for means/medians (all months, or only complete ones). */
@@ -21,7 +22,7 @@ function rankMap(byCategory: Record<string, Journal[]>): Record<string, number> 
 }
 
 /** All-time per-category statistics with month-over-month rank movement. */
-export function categoryStats(journals: Journal[], w: AverageWindow): CategoryStat[] {
+export function categoryStats(journals: Journal[], w: AverageWindow, vatOf: VatFn | null = null): CategoryStat[] {
   const byCategory = groupBy(journals, (j) => j.category);
   const current = groupBy(
     journals.filter((j) => monthKey(j.date) === w.currentMonthKey),
@@ -66,6 +67,7 @@ export function categoryStats(journals: Journal[], w: AverageWindow): CategorySt
         currentRank,
         previousRank,
         rankChange,
+        ...(vatOf ? { vat: sumVat(txs, vatOf) } : {}),
       };
     })
     .sort((a, b) => b.total - a.total);

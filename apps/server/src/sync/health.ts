@@ -81,6 +81,11 @@ export function runHealthChecks(i: HealthInput): HealthReport {
   const stale = Object.keys(i.settings.accounts.rules).filter((n) => !known.has(n.toLowerCase()));
   if (stale.length) checks.push({ id: 'unknown_account_rules', severity: 'info', count: stale.length, params: { names: stale.join(', ') } });
 
+  // --- VAT in cash flow --------------------------------------------------------
+  if (i.settings.tax.cashflowVat.scope === 'company' && !i.settings.tax.grOe.companyTag) {
+    checks.push({ id: 'cashflow_vat_company_tag_missing', severity: 'warning' });
+  }
+
   // --- Tax module -----------------------------------------------------------
   if (i.settings.tax.module === 'gr_oe') {
     const cfg = i.settings.tax.grOe;

@@ -48,6 +48,7 @@ Put WheresMyMoney! behind your reverse proxy with HTTPS if you expose it beyond 
 | Brokers | Settings → Connections; each broker has a short "how to get the credentials" guide. IBKR needs an Activity Flex Query (XML) with Open Positions, Cash Report and NAV; statements are end-of-day and fetched every few hours |
 | Company transactions | Tag them with the company tag (Settings → Business & tax) |
 | VAT rate of a transaction | Tag `<prefix> <rate>`, e.g. `ΦΠΑ 13`; the no-VAT tag means 0 %; otherwise the default rate |
+| VAT in the cash flow | Optional (Settings → Business & tax → VAT in cash flow): VAT per category with the same rules, for company transactions only or for all transactions except categories you exclude (rent, salary, …) |
 | VAT paid to the tax office | A withdrawal carrying all "VAT payment tags" (case/accent-insensitive) |
 | Prepaid advance tax | A liability account named after the configured pattern (e.g. `Φόρος Εισοδήματος 2025`) with `Προκαταβολή: 1500.50` in its notes |
 
